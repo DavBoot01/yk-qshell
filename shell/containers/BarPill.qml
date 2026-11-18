@@ -17,6 +17,9 @@ import qs.themes
 //   Height is fixed: Theme.sizes.barHeight − Theme.bar.pill.verticalMargin * 2
 //   Width adapts to content: contentLoader.implicitWidth + horizontalPadding * 2,
 //   floored at Theme.bar.pill.minWidth. Width changes animate via Behavior.
+//   With Theme.bar.pill.holdWidth the width only grows at once; it shrinks
+//   after the content has stayed narrower for holdRelease ms. The content
+//   then sits at `contentAlign` inside the held room.
 //
 // Usage:
 //   BarPill {
@@ -43,16 +46,41 @@ Item {
     property real   radius:            Theme.bar.pill.radius
     property real   horizontalPadding: Theme.bar.pill.horizontalPadding
 
+    // "left" | "center" | "right" — where the content sits when the pill is
+    // wider than it (held width). Side pills align to the screen's side.
+    property string contentAlign: "center"
+
     // ── Sizing ────────────────────────────────────────────────────────────────
 
     // Height is fixed; widgets must adapt to it, not define it.
     height: Theme.sizes.barHeight - Theme.bar.pill.verticalMargin * 2
 
-    // Width grows with content, never narrower than minWidth.
-    width: Math.max(
+    // Width the content asks for, never narrower than minWidth.
+    readonly property real _natural: Math.max(
         contentLoader.implicitWidth + root.horizontalPadding * 2,
         Theme.bar.pill.minWidth
     )
+
+    // Widest width held (holdWidth); follows _natural up at once, down only
+    // when _releaseTimer fires.
+    property real _held: 0
+
+    on_NaturalChanged: {
+        if (root._natural >= root._held) {
+            root._held = root._natural
+            _releaseTimer.stop()
+        } else if (!_releaseTimer.running) {
+            _releaseTimer.start()
+        }
+    }
+
+    Timer {
+        id: _releaseTimer
+        interval: Theme.bar.pill.holdRelease
+        onTriggered: root._held = root._natural
+    }
+
+    width: Theme.bar.pill.holdWidth ? Math.max(root._held, root._natural) : root._natural
 
     Behavior on width {
         NumberAnimation {
@@ -95,7 +123,10 @@ Item {
     // Loader height is pinned to the pill height — widgets must fit within it.
     Loader {
         id: contentLoader
-        anchors.centerIn: parent
+        anchors.verticalCenter: parent.verticalCenter
+        x: root.contentAlign === "left"  ? root.horizontalPadding
+         : root.contentAlign === "right" ? root.width - root.horizontalPadding - width
+         : Math.round((root.width - width) / 2)
         height: root.height
         sourceComponent: root.content
     }

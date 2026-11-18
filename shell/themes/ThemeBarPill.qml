@@ -24,6 +24,11 @@ QtObject {
 
     // ── Sizing ────────────────────────────────────────────────────────
     property real minWidth: 80
+    // Hold the widest width a pill's content has reached, so the bar does not
+    // breathe with every changing number. It gives the room back only after the
+    // content has stayed narrower for holdRelease ms (a widget gone for good).
+    property bool holdWidth:   true
+    property int  holdRelease: 30000
     property real verticalMargin: 8
     property real horizontalPadding: 14
 

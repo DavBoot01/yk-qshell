@@ -15,6 +15,11 @@ import qs.services
 // Inside: a strip Rectangle (barStrip) containing three pill-shaped Rectangles
 // (left / center / right).
 //
+// ── Shape ─────────────────────────────────────────────────────────────────────
+// Theme.bar.shape "strip" paints barStrip itself; "tabs" (default) leaves it
+// transparent and paints one BarTab behind each pill, bound to the pill's
+// geometry so it follows the pill's width animation.
+//
 // ── Auto-hide ─────────────────────────────────────────────────────────────────
 // Controlled by Theme.bar.autoHide.enabled (default: false = always visible).
 // When enabled, barStrip slides off the screen edge when idle.
@@ -35,6 +40,16 @@ Scope {
 
     // "top" | "bottom"
     property string position: "top"
+
+    // Tabs hang from the edge, so they never float.
+    readonly property bool _tabs:     Theme.bar.shape === "tabs"
+    readonly property bool _floating: Theme.bar.floating && !root._tabs
+
+    // Side pills' distance from the screen's sides: room for a side tab's
+    // margin, flare and padding when the tabs stand off the corners.
+    readonly property real _sideMargin: root._tabs && !Theme.bar.tabFlushEdges
+        ? Theme.bar.tabEdgeMargin + Theme.bar.tabFlare + Theme.bar.tabPadding
+        : Theme.bar.horizontalMargin
 
     // Content slots — bind in modules/bar/Bar.qml
     property Component leftContent:   null
@@ -87,11 +102,11 @@ Scope {
 
             // Reserved screen edge height (strut) when the bar is shown.
             readonly property real _reservedHeight: Theme.sizes.barHeight
-                + (Theme.bar.floating ? Theme.bar.floatingMargin * 2 : 0)
+                + (root._floating ? Theme.bar.floatingMargin * 2 : 0)
 
             // Window is taller than _reservedHeight when shadow needs extra room.
             implicitHeight: _reservedHeight
-                + (Theme.bar.floating && Theme.bar.stripShadowEnabled
+                + (root._floating && Theme.bar.stripShadowEnabled
                    ? Theme.bar.stripShadowRadius
                      + Math.max(Theme.bar.stripShadowOffsetY, 0)
                    : 0)
@@ -158,15 +173,15 @@ Scope {
                 id: barStrip
 
                 // Floating: strip is inset from window edges; otherwise flush.
-                x: Theme.bar.floating ? Theme.bar.floatingMargin : 0
-                width: parent.width - (Theme.bar.floating ? Theme.bar.floatingMargin * 2 : 0)
+                x: root._floating ? Theme.bar.floatingMargin : 0
+                width: parent.width - (root._floating ? Theme.bar.floatingMargin * 2 : 0)
                 height: Theme.sizes.barHeight
 
                 // y animates between _shownY (visible) and _hiddenY (off-screen above).
-                readonly property real _shownY:  Theme.bar.floating
+                readonly property real _shownY:  root._floating
                     ? Theme.bar.floatingMargin : 0
                 readonly property real _hiddenY: -(barStrip.height
-                    + (Theme.bar.floating ? Theme.bar.floatingMargin : 0))
+                    + (root._floating ? Theme.bar.floatingMargin : 0))
 
                 y: barWindow._mustShow ? barStrip._shownY : barStrip._hiddenY
 
@@ -177,7 +192,7 @@ Scope {
                     }
                 }
 
-                color: Theme.bar.stripBackground
+                color: root._tabs ? "transparent" : Theme.bar.stripBackground
 
                 topLeftRadius:     Theme.bar.stripRadiusTopLeft
                 topRightRadius:    Theme.bar.stripRadiusTopRight
@@ -185,7 +200,7 @@ Scope {
                 bottomRightRadius: Theme.bar.stripRadiusBottomRight
 
                 // Strip drop shadow via MultiEffect
-                layer.enabled: Theme.bar.stripShadowEnabled
+                layer.enabled: Theme.bar.stripShadowEnabled && !root._tabs
                 layer.effect: MultiEffect {
                     shadowEnabled:          Theme.bar.stripShadowEnabled
                     shadowColor:            Theme.bar.stripShadowColor
@@ -207,16 +222,54 @@ Scope {
                     }
                 }
 
+                // ── Tabs (shape "tabs") ───────────────────────────────────────
+                // Behind the pills; each spans its pill plus padding plus flares.
+                BarTab {
+                    readonly property bool _flush: Theme.bar.tabFlushEdges
+                    visible:    root._tabs
+                    x:          _flush ? 0 : leftPill.x - Theme.bar.tabPadding - flare
+                    width:      leftPill.x + leftPill.width + Theme.bar.tabPadding + flare - x
+                    height:     parent.height
+                    flareLeft:  !_flush
+                    fillColor:  Theme.bar.tabBackground
+                    radius:     Theme.bar.tabRadius
+                    flare:      Theme.bar.tabFlare
+                    mirrored:   root.position === "bottom"
+                }
+                BarTab {
+                    visible:   root._tabs
+                    x:         centerPill.x - Theme.bar.tabPadding - flare
+                    width:     centerPill.width + (Theme.bar.tabPadding + flare) * 2
+                    height:    parent.height
+                    fillColor: Theme.bar.tabBackground
+                    radius:    Theme.bar.tabRadius
+                    flare:     Theme.bar.tabFlare
+                    mirrored:  root.position === "bottom"
+                }
+                BarTab {
+                    readonly property bool _flush: Theme.bar.tabFlushEdges
+                    visible:    root._tabs
+                    x:          rightPill.x - Theme.bar.tabPadding - flare
+                    width:      (_flush ? parent.width : rightPill.x + rightPill.width + Theme.bar.tabPadding + flare) - x
+                    height:     parent.height
+                    flareRight: !_flush
+                    fillColor:  Theme.bar.tabBackground
+                    radius:     Theme.bar.tabRadius
+                    flare:      Theme.bar.tabFlare
+                    mirrored:   root.position === "bottom"
+                }
+
                 // ── Left pill ─────────────────────────────────────────────────
                 BarPill {
                     id: leftPill
                     anchors {
                         left:           parent.left
-                        leftMargin:     Theme.bar.horizontalMargin
+                        leftMargin:     root._sideMargin
                         verticalCenter: parent.verticalCenter
                     }
                     screen:    barWindow.modelData
                     styleMode: root.leftStyle
+                    contentAlign: "left"
                     content:   root.leftContent
                 }
 
@@ -234,11 +287,12 @@ Scope {
                     id: rightPill
                     anchors {
                         right:          parent.right
-                        rightMargin:    Theme.bar.horizontalMargin
+                        rightMargin:    root._sideMargin
                         verticalCenter: parent.verticalCenter
                     }
                     screen:    barWindow.modelData
                     styleMode: root.rightStyle
+                    contentAlign: "right"
                     content:   root.rightContent
                 }
             }

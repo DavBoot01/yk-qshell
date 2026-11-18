@@ -14,6 +14,29 @@ QtObject {
     // Spacing between sibling items inside a pill
     property real itemSpacing: 10
 
+    // ── Shape ─────────────────────────────────────────────────────────────
+    // "tabs"  (default): no continuous strip; each pill sits in a tab that
+    //         hangs from the screen edge and flares into it with concave
+    //         corners (BarTab). Between the tabs the screen shows through.
+    //         The space is still reserved, and `floating` is ignored.
+    // "strip": one continuous strip across the edge (stripBackground,
+    //          stripRadius*, floating).
+    property string shape: "tabs"
+    // Tab fill — the strip's, so a theme colours both shapes at once.
+    property color tabBackground: stripBackground
+    // Convex radius of a tab's two free corners.
+    property real  tabRadius:     14
+    // Radius of the concave corners where a tab meets the edge.
+    property real  tabFlare:      14
+    // Extra room between a pill and its tab, on each side.
+    property real  tabPadding:    0
+    // true: the left and right tabs run into the screen corners (no flare there).
+    // false: they stand off the corners and flare on both sides, like the center.
+    property bool  tabFlushEdges: false
+    // When not flush: gap between the screen's side and where a side tab's
+    // flare starts.
+    property real  tabEdgeMargin: 16
+
     // ── Floating mode ─────────────────────────────────────────────────────
     // When false (default): the strip fills the full window edge-to-edge.
     // When true: the strip floats inside the window with floatingMargin
