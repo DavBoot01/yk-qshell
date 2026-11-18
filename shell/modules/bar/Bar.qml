@@ -54,6 +54,7 @@ BarContainer {
                 break
             case "audio":
             case "wifi":
+            case "bluetooth":
                 PanelManager.toggle("side-right", name, bar._rightPanelContent, screen)
                 break
             default:
@@ -194,6 +195,23 @@ BarContainer {
                         type:       Network.type
                         ssid:       Network.ssid
                         wifiSignal: Network.wifiSignal
+                    }
+                }
+            }
+
+            // Bluetooth chip — toggles the right panel on the bluetooth tab
+            BarChip {
+                anchors.verticalCenter: parent.verticalCenter
+                visible:        BluetoothService.available
+                panelId:        "side-right"
+                panelContentId: "bluetooth"
+                panelContent:   bar._rightPanelContent
+                content: Component {
+                    BluetoothWidget {
+                        available: BluetoothService.available
+                        powered:   BluetoothService.powered
+                        connected: BluetoothService.connected.length
+                        asking:    BluetoothService.pairing !== null
                     }
                 }
             }

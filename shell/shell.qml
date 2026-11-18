@@ -73,6 +73,7 @@ ShellRoot {
         Workspace.initialize()
         AudioService.initialize()
         WiFiService.initialize()
+        BluetoothService.initialize()
     }
 
 }

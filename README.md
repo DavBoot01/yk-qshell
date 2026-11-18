@@ -20,6 +20,7 @@ the application one at a time; until a service has, it reads the system as `my-q
 | `Battery` | `power` 0.2.0 (stream and question `power.status`) |
 | `Network` | `network` 0.2.0 (streams and questions `network.status`, `network.link`) |
 | `WiFiService` | `network` 0.2.0 (stream `network.scan` while the Wi-Fi tab is open, question `network.access-points`, commands to scan, connect and disconnect) |
+| `BluetoothService` — new: a bar chip and a Bluetooth tab in the right panel | `bluetooth` 0.1.0 (stream and question `bluetooth.status`, with a pairing waiting for the person; `bluetooth.devices` and `bluetooth.scan` while the tab is open; commands to power, pair, connect, disconnect, forget and answer a pairing) |
 | `SystemInfo` | `/etc/os-release` |
 | `AudioService`, `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
 

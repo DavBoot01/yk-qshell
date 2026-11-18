@@ -26,3 +26,12 @@ plugins:
     arch: x86_64
     digest: sha256:2227e4e532069f2f042aef79e9596b326d19dd5f6a03406e442fe4b14f27d71a
     taken: 2026-11-18T17:07:56Z
+  - id: com.yoke.bluetooth
+    unit: bluetooth
+    source: https://github.com/yoke-project/yoke-plugin-bluetooth
+    tag: v0.1.0
+    commit: 3ee303e9b325a478f5e65b382eb2fbd1337260a0
+    clean: true
+    arch: x86_64
+    digest: sha256:8a4da2dac26bd1cc249b7372978786e238fdca10a1f742b38d828f1f277cf328
+    taken: 2026-11-18T17:11:18Z

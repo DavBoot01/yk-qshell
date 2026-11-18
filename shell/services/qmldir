@@ -4,6 +4,7 @@ StreamJoin             1.0 StreamJoin.qml
 singleton AppLauncher  1.0 AppLauncher.qml
 singleton AudioService 1.0 AudioService.qml
 singleton Battery      1.0 Battery.qml
+singleton BluetoothService 1.0 BluetoothService.qml
 singleton DateTime     1.0 DateTime.qml
 singleton Network      1.0 Network.qml
 singleton PanelManager 1.0 PanelManager.qml

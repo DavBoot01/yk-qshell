@@ -19,6 +19,11 @@ units:
     plugin: com.yoke.network
     exec: components/plugins/network
     digest: sha256:2227e4e532069f2f042aef79e9596b326d19dd5f6a03406e442fe4b14f27d71a
+  bluetooth:
+    kind: plugin
+    plugin: com.yoke.bluetooth
+    exec: components/plugins/bluetooth
+    digest: sha256:8a4da2dac26bd1cc249b7372978786e238fdca10a1f742b38d828f1f277cf328
 channels:
   shell:
     transport: local

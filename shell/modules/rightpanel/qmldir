@@ -3,3 +3,5 @@ RightPanel      1.0 RightPanel.qml
 AudioPanel      1.0 AudioPanel.qml
 WiFiPanel       1.0 WiFiPanel.qml
 NetworkListItem 1.0 NetworkListItem.qml
+BluetoothPanel    1.0 BluetoothPanel.qml
+BluetoothListItem 1.0 BluetoothListItem.qml

@@ -9,9 +9,9 @@ import qs.services
 
 // RightPanel — tab host for the right side panel.
 //
-// Two tabs: "audio" and "wifi".
-// Active tab is PanelManager.activeContentId ("audio" | "wifi").
-// Content area swaps between AudioPanel and WiFiPanel via a StackLayout.
+// Three tabs: "audio", "wifi" and "bluetooth".
+// Active tab is PanelManager.activeContentId ("audio" | "wifi" | "bluetooth").
+// Content area swaps between AudioPanel, WiFiPanel and BluetoothPanel via a StackLayout.
 Item {
     id: root
 
@@ -28,7 +28,8 @@ Item {
         Repeater {
             model: [
                 { id: "audio", icon: "󰕾", label: "Audio" },
-                { id: "wifi",  icon: "󰖩",  label: "Wi-Fi" }
+                { id: "wifi",  icon: "󰖩",  label: "Wi-Fi" },
+                { id: "bluetooth", icon: "󰂯", label: "Bluetooth" }
             ]
 
             delegate: Item {
@@ -36,7 +37,7 @@ Item {
                 required property var modelData
                 readonly property bool _active: PanelManager.activeContentId === tabDelegate.modelData.id
 
-                width:  (tabBar.width - tabBar.spacing) / 2
+                width:  (tabBar.width - 2 * tabBar.spacing) / 3
                 height: tabBar.height
 
                 Rectangle {
@@ -112,9 +113,11 @@ Item {
         }
         anchors.topMargin: 10
 
-        currentIndex: PanelManager.activeContentId === "wifi" ? 1 : 0
+        currentIndex: PanelManager.activeContentId === "wifi" ? 1
+                    : PanelManager.activeContentId === "bluetooth" ? 2 : 0
 
-        AudioPanel {}
-        WiFiPanel  {}
+        AudioPanel     {}
+        WiFiPanel      {}
+        BluetoothPanel {}
     }
 }
