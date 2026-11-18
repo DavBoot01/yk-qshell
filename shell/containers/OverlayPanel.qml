@@ -92,7 +92,6 @@ PanelWindow {
     implicitHeight: win.topInset + win.panelHeight + win._shadowOverflow
 
     // ── Slide geometry ────────────────────────────────────────────────────────
-    readonly property string _axis: win._isTop ? "y" : "x"
     readonly property real _shownPos: win.edge === "top"  ? win.topInset
                                     : win.edge === "left" ? 0
                                     : win.width - win.panelWidth
@@ -100,13 +99,12 @@ PanelWindow {
                                      : win.edge === "left" ? -win.panelWidth
                                      : win.width
 
-    // 0 = fully hidden, 1 = fully shown (drives the dim layer).
-    readonly property real _progress: {
-        const span = win._shownPos - win._hiddenPos
-        if (span === 0) return 0
-        const cur = win._isTop ? panel.y : panel.x
-        return Math.max(0, Math.min(1, (cur - win._hiddenPos) / span))
-    }
+    // 0 = fully hidden, 1 = fully shown. The animations drive this, never a
+    // coordinate: the window's size is not known when it is mapped (it reports
+    // Qt's default width first and the screen's only after the compositor
+    // configures it), so the panel's position is bound to the current geometry
+    // and follows it, instead of an end point computed against a stale width.
+    property real _progress: 0
 
     // ── Content ───────────────────────────────────────────────────────────────
     property Component _content: null
@@ -151,7 +149,6 @@ PanelWindow {
         function onActivePanelIdChanged(): void {
             if (PanelManager.activePanelId === win.panelId) {
                 closeAnim.stop()
-                if (!win.visible) win._place(win._hiddenPos)
                 win.visible = true
                 openAnim.restart()
             } else if (win.visible) {
@@ -161,25 +158,20 @@ PanelWindow {
         }
     }
 
-    function _place(pos: real): void {
-        if (win._isTop) panel.y = pos
-        else            panel.x = pos
-    }
-
     NumberAnimation {
         id: openAnim
-        target:      panel
-        property:    win._axis
-        to:          win._shownPos
+        target:      win
+        property:    "_progress"
+        to:          1
         duration:    Theme.animation.durationLong
         easing.type: Easing.OutExpo
     }
 
     NumberAnimation {
         id: closeAnim
-        target:      panel
-        property:    win._axis
-        to:          win._hiddenPos
+        target:      win
+        property:    "_progress"
+        to:          0
         duration:    Theme.animation.durationLong
         easing.type: Easing.InCubic
         onFinished: {
@@ -202,8 +194,10 @@ PanelWindow {
 
         width:  win.panelWidth
         height: win._isTop ? win.panelHeight : win.height
-        x:      win._isTop ? Math.round((win.width - width) / 2) : win._hiddenPos
-        y:      win._isTop ? -win.panelHeight : 0
+        readonly property real _pos: win._hiddenPos + (win._shownPos - win._hiddenPos) * win._progress
+
+        x:      win._isTop ? Math.round((win.width - width) / 2) : panel._pos
+        y:      win._isTop ? panel._pos : 0
 
         color: win.panelColor
 
