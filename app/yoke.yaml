@@ -24,7 +24,12 @@ units:
     plugin: com.yoke.bluetooth
     exec: components/plugins/bluetooth
     digest: sha256:8a4da2dac26bd1cc249b7372978786e238fdca10a1f742b38d828f1f277cf328
+  audio:
+    kind: plugin
+    plugin: com.yoke.audio
+    exec: components/plugins/audio
+    digest: sha256:dd17a0d3860696cd211ece961e3fb506c1c9f134862c2553b7215915bdc6ded8
 channels:
   shell:
     transport: local
-    clients: single
+    clients: multiple

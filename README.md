@@ -4,7 +4,7 @@ A desktop shell for Wayland and Hyprland, written in QML with [Quickshell](https
 whose view of the system comes from a [Yoke](https://github.com/yoke-project) application: what the shell
 shows of the CPU, the memory, the network, the power and Bluetooth is what the application's Plugins say,
 read through the interface contract with the QML binding of `yoke-sdk-cpp`. What belongs to the compositor
-or to the shell itself — workspaces, the tray, the launcher, audio — stays Quickshell's.
+or to the shell itself — workspaces, the tray, the launcher — stays Quickshell's.
 
 It is also a practical case for Yoke: where the shell needs something Yoke does not offer, the answer is
 made in Yoke, not worked around here.
@@ -22,13 +22,14 @@ the application one at a time; until a service has, it reads the system as `my-q
 | `WiFiService` | `network` 0.2.0 (stream `network.scan` while the Wi-Fi tab is open, question `network.access-points`, commands to scan, connect and disconnect) |
 | `BluetoothService` — new: a bar chip and a Bluetooth tab in the right panel | `bluetooth` 0.1.0 (stream and question `bluetooth.status`, with a pairing waiting for the person; `bluetooth.devices` and `bluetooth.scan` while the tab is open; commands to power, pair, connect, disconnect, forget and answer a pairing) |
 | `SystemInfo` | `/etc/os-release` |
-| `AudioService`, `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
+| `AudioService` — the default output's volume and mute | `audio` 0.1.0 (stream and question `audio.status`, commands `audio.volume.set` and `audio.mute.set`) |
+| `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
 
 ## Layout
 
 | Path | What it is |
 | --- | --- |
-| `app/` | The Yoke application, made with `yoke-compose`: its Plugins (`plugins.yaml`, `manifests/`) and the channel `shell`, a local socket for one client, that no unit is launched for |
+| `app/` | The Yoke application, made with `yoke-compose`: its Plugins (`plugins.yaml`, `manifests/`) and the channel `shell`, a local socket that no unit is launched for. It admits more than one client, since Quickshell reloading the shell attaches the new one before the old has let go |
 | `shell/` | The Quickshell configuration. `services/Yoke.qml` holds the one attachment to the channel; `services/StreamJoin.qml` joins a Plugin's present to what its stream brings after, by the sequence the Plugin states, and the services are built on the two |
 | `scripts/run.sh` | Runs the application on a local Core, grants its Plugins what they declare, and starts the shell beside it |
 

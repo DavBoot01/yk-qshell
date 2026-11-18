@@ -35,3 +35,12 @@ plugins:
     arch: x86_64
     digest: sha256:8a4da2dac26bd1cc249b7372978786e238fdca10a1f742b38d828f1f277cf328
     taken: 2026-11-18T17:11:18Z
+  - id: com.yoke.audio
+    unit: audio
+    source: https://github.com/yoke-project/yoke-plugin-audio
+    tag: v0.1.0
+    commit: c84d0ab71742d96a895a88f832eafa46dfced0a8
+    clean: true
+    arch: x86_64
+    digest: sha256:dd17a0d3860696cd211ece961e3fb506c1c9f134862c2553b7215915bdc6ded8
+    taken: 2026-11-18T18:59:28Z

@@ -31,11 +31,11 @@ export YOKE_INSTANCE="$instance"
 for manifest in "$app"/manifests/*.yaml; do
   plugin="$(sed -n 's/^id: //p' "$manifest")"
   for capability in $(sed -n 's/^  - name: //p' "$manifest"); do
-    yoke plugin grant "$plugin" "$capability" > /dev/null
+    yoke plugin grant "$plugin" "$capability" --instance "$instance" > /dev/null
   done
 done
 for unit in $(awk '$1 == "unit:" {print $2}' "$app/plugins.yaml"); do
-  yoke unit restart "$unit" > /dev/null
+  yoke unit restart "$unit" --instance "$instance" > /dev/null
 done
 
 echo "run.sh: $instance runs; the shell attaches to its channel shell" >&2
