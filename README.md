@@ -60,3 +60,8 @@ scripts/run.sh ~/.local/lib/qt6/qml
 ```
 
 The first run builds each Plugin from the tag `app/plugins.yaml` records.
+
+## Licence
+
+Licensed under the Apache License 2.0, as Yoke is. Quickshell, which runs the shell, is licensed under the
+LGPL 3.0; the shell is a configuration it loads, and the two licences go together.
