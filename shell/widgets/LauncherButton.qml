@@ -41,7 +41,10 @@ Item {
             opacity:  mouseArea.containsMouse ? 1.0 : 0.75
 
             layer.enabled: root.iconColor.a > 0
+            // Colorization keeps the source's lightness, so a dark logo would
+            // stay dark: lift it to full brightness first, then tint.
             layer.effect: MultiEffect {
+                brightness:        1.0
                 colorization:      1.0
                 colorizationColor: root.iconColor
             }
