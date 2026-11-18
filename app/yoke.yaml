@@ -1,0 +1,15 @@
+model: 1
+id: io.github.davboot01.yk-qshell
+version: 0.1.0
+arch: x86_64
+core: ">=0.16.0"
+units:
+  hw-monitor:
+    kind: plugin
+    plugin: com.yoke.hw-monitor
+    exec: components/plugins/hw-monitor
+    digest: sha256:3cd175252eaa9c53684ec91bd760ebd1e7d0dc27fbb43a68d94fe27ec66fd820
+channels:
+  shell:
+    transport: local
+    clients: single

@@ -1,0 +1,2 @@
+# What `yoke-compose add plugin` builds from a Plugin's tag; scripts/run.sh builds it again where missing.
+/app/components/

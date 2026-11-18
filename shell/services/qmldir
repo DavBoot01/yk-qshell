@@ -1,0 +1,3 @@
+module qs.services
+singleton Yoke        1.0 Yoke.qml
+singleton SystemStats 1.0 SystemStats.qml

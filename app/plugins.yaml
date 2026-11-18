@@ -1,0 +1,10 @@
+plugins:
+  - id: com.yoke.hw-monitor
+    unit: hw-monitor
+    source: https://github.com/yoke-project/yoke-plugin-hw-monitor
+    tag: v0.3.0
+    commit: 82ec5b745df82706cf8333313d7e086cdac7a67a
+    clean: true
+    arch: x86_64
+    digest: sha256:3cd175252eaa9c53684ec91bd760ebd1e7d0dc27fbb43a68d94fe27ec66fd820
+    taken: 2026-11-18T16:25:44Z
