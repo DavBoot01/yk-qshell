@@ -8,3 +8,12 @@ plugins:
     arch: x86_64
     digest: sha256:a6016533782968c1e2e96526dd87e543cbe2d1a848e1dc896ded923addd4f133
     taken: 2026-11-18T16:33:24Z
+  - id: com.yoke.power
+    unit: power
+    source: https://github.com/yoke-project/yoke-plugin-power
+    tag: v0.2.0
+    commit: 3a3369ab448e287e4daeea81af6cdab6d0f2d9e3
+    clean: true
+    arch: x86_64
+    digest: sha256:ca1fb6e96ad66ec692dde948bfc1d63b4f83bf549a9aaef2ceb39553f3fb4cce
+    taken: 2026-11-18T16:58:52Z

@@ -17,7 +17,7 @@ the application one at a time; until a service has, it reads the system as `my-q
 | Service | From |
 | --- | --- |
 | `SystemStats` — CPU, memory, swap | `hw-monitor` 0.4.0 (streams `hw.cpu`, `hw.memory`, question `hw.snapshot`) |
-| `Battery` | Quickshell's UPower binding, until it moves onto `power` |
+| `Battery` | `power` 0.2.0 (stream and question `power.status`) |
 | `Network`, `WiFiService` | Quickshell's NetworkManager binding, until they move onto `network` |
 | `SystemInfo` | `/etc/os-release` |
 | `AudioService`, `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
