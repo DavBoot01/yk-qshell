@@ -15,9 +15,13 @@ import Quickshell
 //   volume   — current volume level [0–150], as a person reads it; above 100 = overdrive
 //   muted    — true when the default output is muted
 //   output   — the default output's name for a person; "" when there is none
+//   outputForm — what the default output is: "headphones", "headset", "speaker", "hdmi", …; "" when
+//              audio does not say (before 0.2.0, or nothing states it)
+//   hasInput / inputMuted / inputForm — the default input (microphone), if there is one
 //
 // ── API ───────────────────────────────────────────────────────────────────────
 //   setVolume(vol)  — set volume (clamped to [0, 150])
+//   stepVolume(n)   — n steps of volumeStep up (n > 0) or down, never past 100 by stepping
 //   toggleMute()    — toggle mute state
 Singleton {
     id: root
@@ -29,6 +33,15 @@ Singleton {
     readonly property int volume: _asked >= 0 ? _asked : (_output ? _output.volume_pct : 0)
     readonly property bool muted: _output ? _output.mute : false
     readonly property string output: _output ? _output.description : ""
+    readonly property string outputForm: _output && _output.form ? _output.form : ""
+
+    property var _input: null
+    readonly property bool hasInput: _input !== null && _input !== undefined
+    readonly property bool inputMuted: hasInput ? _input.mute : false
+    readonly property string inputForm: hasInput && _input.form ? _input.form : ""
+
+    // Percent per wheel notch.
+    readonly property int volumeStep: 5
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
     readonly property bool ready: _output !== null && _output !== undefined
@@ -45,6 +58,14 @@ Singleton {
         root._asked = Math.max(0, Math.min(150, vol));
         if (!root._sending)
             root._send();
+    }
+
+    // Stepping stops at 100: past it is overdrive, which the slider reaches on purpose, never a wheel.
+    function stepVolume(steps: int): void {
+        if (!root.ready || steps === 0)
+            return;
+        const target = root.volume + steps * root.volumeStep;
+        root.setVolume(steps > 0 ? Math.min(target, Math.max(100, root.volume)) : target);
     }
 
     function toggleMute(): void {
@@ -84,6 +105,7 @@ Singleton {
         stream: "audio.status"
         onValue: v => {
             root._output = v.output;
+            root._input = v.input;
             // What was asked is now what is: the status speaks for it again.
             if (!root._sending && v.output && v.output.volume_pct === root._asked)
                 root._asked = -1;

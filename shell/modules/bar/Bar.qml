@@ -177,8 +177,12 @@ BarContainer {
                 panelContent:   bar._rightPanelContent
                 content: Component {
                     AudioWidget {
-                        volume: AudioService.volume
-                        muted:  AudioService.muted
+                        volume:     AudioService.volume
+                        muted:      AudioService.muted
+                        outputForm: AudioService.outputForm
+                        hasInput:   AudioService.hasInput
+                        inputMuted: AudioService.inputMuted
+                        onStepped:  steps => AudioService.stepVolume(steps)
                     }
                 }
             }
