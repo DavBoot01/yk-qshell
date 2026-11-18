@@ -61,6 +61,23 @@ scripts/run.sh ~/.local/lib/qt6/qml
 
 The first run builds each Plugin from the tag `app/plugins.yaml` records.
 
+### Blur
+
+The bar and the panels are translucent black; the blur behind them is Hyprland's, asked for by a layer rule
+on the shell's namespaces (`myshell:bar`, `myshell:side-right`, `myshell:center-dropdown`, …). In
+`hyprland.lua` (Hyprland 0.55 or newer):
+
+```lua
+hl.layer_rule({
+    name         = "yk-qshell-blur",
+    match        = { namespace = "^myshell:.*$" },
+    blur         = true,
+    ignore_alpha = 0.45, -- the panels (0.72) are blurred, the side panel's dim (0.40) and the gaps are not
+})
+```
+
+`hyprctl eval '<the same call>'` applies it to the running compositor without a reload.
+
 ## Licence
 
 Licensed under the Apache License 2.0, as Yoke is. Quickshell, which runs the shell, is licensed under the
