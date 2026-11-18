@@ -234,6 +234,9 @@ Scope {
                     fillColor:  Theme.bar.tabBackground
                     radius:     Theme.bar.tabRadius
                     flare:      Theme.bar.tabFlare
+                    sheen:      Theme.surface.sheen
+                    rimColor:   Theme.surface.rimColor
+                    rimWidth:   Theme.surface.rimWidth
                     mirrored:   root.position === "bottom"
                 }
                 BarTab {
@@ -244,6 +247,9 @@ Scope {
                     fillColor: Theme.bar.tabBackground
                     radius:    Theme.bar.tabRadius
                     flare:     Theme.bar.tabFlare
+                    sheen:     Theme.surface.sheen
+                    rimColor:  Theme.surface.rimColor
+                    rimWidth:  Theme.surface.rimWidth
                     mirrored:  root.position === "bottom"
                 }
                 BarTab {
@@ -256,6 +262,9 @@ Scope {
                     fillColor:  Theme.bar.tabBackground
                     radius:     Theme.bar.tabRadius
                     flare:      Theme.bar.tabFlare
+                    sheen:      Theme.surface.sheen
+                    rimColor:   Theme.surface.rimColor
+                    rimWidth:   Theme.surface.rimWidth
                     mirrored:   root.position === "bottom"
                 }
 

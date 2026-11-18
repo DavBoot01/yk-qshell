@@ -51,6 +51,7 @@ Singleton {
     readonly property ThemeBar            bar:            activeTheme.bar
     readonly property ThemeCenterDropdown centerDropdown: activeTheme.centerDropdown
     readonly property ThemeSidePanel      sidePanel:      activeTheme.sidePanel
+    readonly property ThemeSurface        surface:        activeTheme.surface
     readonly property ThemeSizes          sizes:          activeTheme.sizes
     readonly property ThemeAnimation      animation:      activeTheme.animation
     readonly property ThemeFont           font:           activeTheme.font

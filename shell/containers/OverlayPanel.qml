@@ -201,6 +201,33 @@ PanelWindow {
 
         color: win.panelColor
 
+        // Relief (Theme.surface): a sheen from the top, and a rim along the edge.
+        gradient: Theme.surface.sheen > 0 ? _sheen : null
+        Gradient {
+            id: _sheen
+            GradientStop {
+                position: 0
+                color: Qt.rgba(win.panelColor.r + (1 - win.panelColor.r) * Theme.surface.sheen,
+                               win.panelColor.g + (1 - win.panelColor.g) * Theme.surface.sheen,
+                               win.panelColor.b + (1 - win.panelColor.b) * Theme.surface.sheen,
+                               win.panelColor.a)
+            }
+            GradientStop { position: 1; color: win.panelColor }
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            z:            1
+            visible:      Theme.surface.rimColor.a > 0
+            color:        "transparent"
+            border.color: Theme.surface.rimColor
+            border.width: Theme.surface.rimWidth
+            topLeftRadius:     win.topLeftRadius
+            topRightRadius:    win.topRightRadius
+            bottomLeftRadius:  win.bottomLeftRadius
+            bottomRightRadius: win.bottomRightRadius
+        }
+
         topLeftRadius:     win.topLeftRadius
         topRightRadius:    win.topRightRadius
         bottomLeftRadius:  win.bottomLeftRadius

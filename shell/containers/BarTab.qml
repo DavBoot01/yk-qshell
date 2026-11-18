@@ -20,6 +20,11 @@ import QtQuick.Shapes
 // The item's width includes the flares; the body spans
 // [flareLeft ? flare : 0, width - (flareRight ? flare : 0)].
 // Drawn for a top bar; a bottom bar mirrors it (`mirrored`).
+//
+// Relief (Theme.surface, through the properties below): the fill runs from
+// `fillColor` lightened by `sheen` at the edge it hangs from to plain
+// `fillColor` at its free edge, and a `rimWidth` line of `rimColor` follows
+// the outline.
 Shape {
     id: root
 
@@ -29,6 +34,9 @@ Shape {
     property bool  flareLeft:  true
     property bool  flareRight: true
     property bool  mirrored:   false
+    property real  sheen:      0
+    property color rimColor:   "transparent"
+    property real  rimWidth:   1
 
     readonly property real _fl: root.flareLeft  ? root.flare : 0
     readonly property real _fr: root.flareRight ? root.flare : 0
@@ -44,8 +52,20 @@ Shape {
     }
 
     ShapePath {
-        fillColor:   root.fillColor
-        strokeWidth: -1
+        strokeColor: root.rimColor
+        strokeWidth: root.rimColor.a > 0 ? root.rimWidth : -1
+        fillGradient: LinearGradient {
+            x1: 0; y1: 0
+            x2: 0; y2: root.height
+            GradientStop {
+                position: 0
+                color: Qt.rgba(root.fillColor.r + (1 - root.fillColor.r) * root.sheen,
+                               root.fillColor.g + (1 - root.fillColor.g) * root.sheen,
+                               root.fillColor.b + (1 - root.fillColor.b) * root.sheen,
+                               root.fillColor.a)
+            }
+            GradientStop { position: 1; color: root.fillColor }
+        }
 
         startX: 0
         startY: 0

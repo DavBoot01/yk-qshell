@@ -40,6 +40,10 @@ QtObject {
     // Right (and future left) slide-in panel.
     property ThemeSidePanel sidePanel: ThemeSidePanel {}
 
+    // ── Surface relief ────────────────────────────────────────────────────────
+    // Rim and sheen of the bar's tabs and the panels (flat by default).
+    property ThemeSurface surface: ThemeSurface {}
+
     // ── Layout sizes ──────────────────────────────────────────────────────────
     property ThemeSizes sizes: ThemeSizes {}
 

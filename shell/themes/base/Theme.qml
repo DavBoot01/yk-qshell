@@ -18,6 +18,10 @@ ThemeBase {
     centerDropdown.background: Qt.rgba(0, 0, 0, 0.72)
     sidePanel.background:      Qt.rgba(0, 0, 0, 0.72)
 
+    // ── Relief — a light rim and a sheen from the top: slightly domed ─────────
+    surface.rimColor: Qt.rgba(1, 1, 1, 0.14)
+    surface.sheen:    0.10
+
     // ── Neutrals — grey, not ThemeBase's blue-tinted ones ─────────────────────
     // outline: tracks, separators, idle dots and bars.
     colors.background: "#000000"

@@ -11,5 +11,6 @@ ThemeColors 1.0 ThemeColors.qml
 ThemeFont 1.0 ThemeFont.qml
 ThemeRounding 1.0 ThemeRounding.qml
 ThemeSidePanel 1.0 ThemeSidePanel.qml
+ThemeSurface 1.0 ThemeSurface.qml
 ThemeSizes 1.0 ThemeSizes.qml
 ThemeWidget 1.0 ThemeWidget.qml
