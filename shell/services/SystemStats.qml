@@ -41,7 +41,13 @@ Singleton {
     property int swapUsedMiB: 0
     property int swapFreeMiB: 0
 
+    // The shell's service lifecycle: derived from what the attachment and the unit say, so initialize() has
+    // nothing to start.
     readonly property bool ready: _cpuSeen && _memorySeen
+    readonly property bool loading: !ready && error === ""
+    property string error: ""
+
+    function initialize(): void {}
 
     property bool _cpuSeen: false
     property bool _memorySeen: false
@@ -60,6 +66,7 @@ Singleton {
             Yoke.link.startStream(unit, stream, null,
                                   refusal => console.warn("stats: " + stream + " not started: " + refusal.code));
         Yoke.link.ask(unit, "hw.snapshot", "", answer => {
+            error = "";
             const present = Yoke.json(answer);
             for (const stream of ["hw.cpu", "hw.memory"]) {
                 const value = present ? present[stream === "hw.cpu" ? "cpu" : "memory"] : null;
@@ -74,6 +81,7 @@ Singleton {
             }
         }, refusal => {
             console.warn("stats: hw.snapshot refused: " + refusal.code);
+            error = "hw-monitor refused its snapshot: " + refusal.code;
             _joining = false;
         });
     }

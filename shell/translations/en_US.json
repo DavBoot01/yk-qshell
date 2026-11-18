@@ -1,0 +1,23 @@
+{
+  "My Shell": "My Shell",
+  "Settings": "Settings",
+  "Close": "Close",
+  "Left Panel": "Left Panel",
+  "Right Panel": "Right Panel",
+  "Center Dropdown": "Center Dropdown",
+  "Bottom Panel": "Bottom Panel",
+  "Center Floating": "Center Floating",
+  "Scan": "Scan",
+  "No networks found": "No networks found",
+  "Scanning…": "Scanning…",
+  "Volume": "Volume",
+  "IP": "IP",
+  "Disconnected": "Disconnected",
+  "Wi-Fi": "Wi-Fi",
+  "Ethernet": "Ethernet",
+  "CPU": "CPU",
+  "RAM": "RAM",
+  "Swap": "Swap",
+  "Audio": "Audio",
+  "No audio device": "No audio device"
+}

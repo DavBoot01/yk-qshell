@@ -1,0 +1,5 @@
+module qs.modules.rightpanel
+RightPanel      1.0 RightPanel.qml
+AudioPanel      1.0 AudioPanel.qml
+WiFiPanel       1.0 WiFiPanel.qml
+NetworkListItem 1.0 NetworkListItem.qml

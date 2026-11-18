@@ -1,0 +1,12 @@
+module qs.widgets
+AudioWidget      1.0 AudioWidget.qml
+BatteryIndicator 1.0 BatteryIndicator.qml
+WiFiWidget       1.0 WiFiWidget.qml
+CpuWidget        1.0 CpuWidget.qml
+DateTimeView   1.0 DateTimeView.qml
+LauncherButton 1.0 LauncherButton.qml
+NetworkWidget  1.0 NetworkWidget.qml
+RamWidget      1.0 RamWidget.qml
+TrayBar               1.0 TrayBar.qml
+TrayIcon              1.0 TrayIcon.qml
+WorkspaceIndicator    1.0 WorkspaceIndicator.qml

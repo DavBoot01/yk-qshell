@@ -2,51 +2,77 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
 
+import qs
+import qs.themes
 import qs.services
+import qs.containers
+import qs.modules.bar
 
-// yk-qshell: a desktop shell whose view of the system comes from a Yoke application. This first bar shows
-// what hw-monitor says of the CPU and the memory; the rest of the shell is ported from my-qshell piece by
-// piece, each service that reads the system moving onto a Plugin of the application.
 ShellRoot {
-    Variants {
-        model: Quickshell.screens
+    id: root
 
-        PanelWindow {
-            required property var modelData
+    Scope {
+        // Always-visible panels
+        Bar {}
 
-            screen: modelData
-            anchors { top: true; left: true; right: true }
-            implicitHeight: 30
-            color: "#1e1e2e"
+        // Center-pill overlay dropdown
+        CenterDropdown {}
 
-            Row {
-                anchors.centerIn: parent
-                spacing: 18
+        // Right side panel (audio / wifi) — content comes from PanelManager
+        SidePanelRight {}
 
-                Text {
-                    color: Yoke.attached ? "#a6e3a1" : "#f38ba8"
-                    font.pixelSize: 13
-                    text: Yoke.attached ? "yoke" : "yoke: not attached"
-                }
-                Text {
-                    color: "#cdd6f4"
-                    font.pixelSize: 13
-                    text: SystemStats.ready ? "CPU " + SystemStats.cpuTotal + "%" : "CPU …"
-                }
-                Text {
-                    color: "#cdd6f4"
-                    font.pixelSize: 13
-                    text: SystemStats.ready ? "RAM " + SystemStats.ramUsedPercent + "% of "
-                          + (SystemStats.ramTotalMiB / 1024).toFixed(1) + " GiB" : "RAM …"
-                }
-                Text {
-                    color: "#9399b2"
-                    font.pixelSize: 13
-                    text: SystemStats.coreCount > 0 ? SystemStats.coreCount + " cores" : ""
-                }
-            }
+        // ── Bar IPC ───────────────────────────────────────────────────────────
+        // Control bar visibility from the compositor or external tools:
+        //   qs ipc call myshell bar toggle
+        //   qs ipc call myshell bar open
+        //   qs ipc call myshell bar close
+        //
+        // Hyprland example bindings (hyprland.conf):
+        //   bind = SUPER, F1, exec, qs ipc call myshell bar toggle
+        IpcHandler {
+            target: "bar"
+            function toggle(): void { GlobalStates.barOpen = !GlobalStates.barOpen }
+            function open():   void { GlobalStates.barOpen = true }
+            function close():  void { GlobalStates.barOpen = false }
+        }
+
+        // ── Theme IPC ─────────────────────────────────────────────────────────
+        //   qs ipc call theme set catppuccin-latte
+        //   qs ipc call theme list
+        IpcHandler {
+            target: "theme"
+            function set(name: string): void { Theme.themeName = name }
+            function list(): string { return Theme.names.join("\n") }
+        }
+
+        // ── Super-key tracking ────────────────────────────────────────────────
+        // Set GlobalStates.superDown from Hyprland IPC when the Meta key is held.
+        // Example (hyprland.conf):
+        //   bind = SUPER, catchall, exec, qs ipc call myshell superDown press
+        //   bindr = SUPER, Super_L, exec, qs ipc call myshell superDown release
+        IpcHandler {
+            target: "superDown"
+            function press():   void { GlobalStates.superDown = true }
+            function release(): void { GlobalStates.superDown = false }
         }
     }
+
+    // Bootstrap: singletons are created lazily on first reference, so touching
+    // them here makes startup eager and the dependency list auditable.
+    // initialize() is idempotent (services also call it from Component.onCompleted).
+    Component.onCompleted: {
+        Translation.initialize()
+        SystemInfo.initialize()
+        SystemStats.initialize()
+        Network.initialize()
+        Battery.initialize()
+        TrayService.initialize()
+        Workspace.initialize()
+        AudioService.initialize()
+        WiFiService.initialize()
+    }
+
 }

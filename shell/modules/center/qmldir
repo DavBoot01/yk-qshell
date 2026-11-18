@@ -1,0 +1,5 @@
+module qs.modules.center
+CenterCarousel 1.0 CenterCarousel.qml
+ClockPage      1.0 ClockPage.qml
+SystemPage     1.0 SystemPage.qml
+NetworkPage    1.0 NetworkPage.qml

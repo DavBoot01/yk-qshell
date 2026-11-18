@@ -1,0 +1,23 @@
+{
+  "My Shell": "La Mia Shell",
+  "Settings": "Impostazioni",
+  "Close": "Chiudi",
+  "Left Panel": "Pannello Sinistro",
+  "Right Panel": "Pannello Destro",
+  "Center Dropdown": "Pannello Centrale",
+  "Bottom Panel": "Pannello Inferiore",
+  "Center Floating": "Pannello Flottante",
+  "Scan": "Scansiona",
+  "No networks found": "Nessuna rete trovata",
+  "Scanning…": "Scansione…",
+  "Volume": "Volume",
+  "IP": "IP",
+  "Disconnected": "Disconnesso",
+  "Wi-Fi": "Wi-Fi",
+  "Ethernet": "Ethernet",
+  "CPU": "CPU",
+  "RAM": "RAM",
+  "Swap": "Swap",
+  "Audio": "Audio",
+  "No audio device": "Nessun dispositivo audio"
+}

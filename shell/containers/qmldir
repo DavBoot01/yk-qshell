@@ -1,0 +1,8 @@
+module qs.containers
+BarContainer       1.0 BarContainer.qml
+BarChip            1.0 BarChip.qml
+BarPill            1.0 BarPill.qml
+OverlayPanel       1.0 OverlayPanel.qml
+CenterDropdown     1.0 CenterDropdown.qml
+SidePanelLeft      1.0 SidePanelLeft.qml
+SidePanelRight     1.0 SidePanelRight.qml

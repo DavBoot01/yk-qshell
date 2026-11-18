@@ -11,12 +11,16 @@ made in Yoke, not worked around here.
 
 ## Status
 
-The first piece: a bar showing CPU and memory from the pool's `hw-monitor`. The rest of the shell follows,
-one service at a time.
+The shell is `my-qshell`'s: its bar, its centre pages, its side panels, its theme. Its services move onto
+the application one at a time; until a service has, it reads the system as `my-qshell` did.
 
 | Service | From |
 | --- | --- |
 | `SystemStats` — CPU, memory, swap | `hw-monitor` 0.4.0 (streams `hw.cpu`, `hw.memory`, question `hw.snapshot`) |
+| `Battery` | Quickshell's UPower binding, until it moves onto `power` |
+| `Network`, `WiFiService` | Quickshell's NetworkManager binding, until they move onto `network` |
+| `SystemInfo` | `/etc/os-release` |
+| `AudioService`, `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
 
 ## Layout
 
