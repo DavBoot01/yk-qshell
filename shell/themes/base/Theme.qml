@@ -1,7 +1,8 @@
 import ".."
 
 // Default theme — translucent black, light orange for what is selected,
-// white text. Everything not listed here is inherited from ThemeBase.
+// white text, on the bar and on every panel alike. Everything not listed here
+// is inherited from ThemeBase.
 ThemeBase {
 
     // ── Selection — light orange ──────────────────────────────────────────────
@@ -9,8 +10,16 @@ ThemeBase {
     colors.primary:          "#ffb870"
     widget.activeBackground: Qt.rgba(1.0, 0.72, 0.44, 0.45)
 
-    // ── Bar — translucent black tabs ──────────────────────────────────────────
-    bar.stripBackground:     Qt.rgba(0, 0, 0, 0.60)
+    // ── Surfaces — translucent black, one density for the bar and the panels ──
+    bar.stripBackground:       Qt.rgba(0, 0, 0, 0.80)
+    centerDropdown.background: Qt.rgba(0, 0, 0, 0.80)
+    sidePanel.background:      Qt.rgba(0, 0, 0, 0.80)
+
+    // ── Neutrals — grey, not ThemeBase's blue-tinted ones ─────────────────────
+    // outline: tracks, separators, idle dots and bars.
+    colors.background: "#000000"
+    colors.surface:    "#262626"
+    colors.outline:    "#4d4d4d"
 
     // ── Text — white ──────────────────────────────────────────────────────────
     colors.textBackground:     "#ffffff"
