@@ -16,10 +16,10 @@ import Yoke.Interface
 // The properties are my-qshell's, so its widgets bind unchanged:
 //   cpuTotal, cpuCores, coreCount                                   [0–100]
 //   ramUsedPercent, swapUsedPercent                                 [0–100]
-//   ramTotalMiB, ramUsedMiB, ramAvailableMiB, ramCachedMiB,
+//   ramTotalMiB, ramUsedMiB, ramFreeMiB, ramAvailableMiB,
+//   ramCachedMiB (Cached + Buffers, as my-qshell counted it), ramBuffersMiB,
 //   swapTotalMiB, swapUsedMiB, swapFreeMiB                          MiB
 //   ready                                                           both figures arrived at least once
-// hw-monitor reports neither MemFree nor Buffers apart, so ramFreeMiB and ramBuffersMiB are not offered.
 Singleton {
     id: root
 
@@ -33,8 +33,10 @@ Singleton {
     property int swapUsedPercent: 0
     property int ramTotalMiB: 0
     property int ramUsedMiB: 0
+    property int ramFreeMiB: 0
     property int ramAvailableMiB: 0
     property int ramCachedMiB: 0
+    property int ramBuffersMiB: 0
     property int swapTotalMiB: 0
     property int swapUsedMiB: 0
     property int swapFreeMiB: 0
@@ -105,8 +107,10 @@ Singleton {
         } else {
             ramTotalMiB = mib(v.total_bytes);
             ramUsedMiB = mib(v.used_bytes);
+            ramFreeMiB = mib(v.free_bytes);
             ramAvailableMiB = mib(v.available_bytes);
-            ramCachedMiB = mib(v.cached_bytes);
+            ramBuffersMiB = mib(v.buffers_bytes);
+            ramCachedMiB = mib(v.cached_bytes + v.buffers_bytes);
             ramUsedPercent = Math.round(v.usage_percent);
             swapTotalMiB = mib(v.swap_total_bytes);
             swapUsedMiB = mib(v.swap_used_bytes);

@@ -8,7 +8,7 @@ units:
     kind: plugin
     plugin: com.yoke.hw-monitor
     exec: components/plugins/hw-monitor
-    digest: sha256:3cd175252eaa9c53684ec91bd760ebd1e7d0dc27fbb43a68d94fe27ec66fd820
+    digest: sha256:a6016533782968c1e2e96526dd87e543cbe2d1a848e1dc896ded923addd4f133
 channels:
   shell:
     transport: local

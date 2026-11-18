@@ -16,7 +16,7 @@ one service at a time.
 
 | Service | From |
 | --- | --- |
-| `SystemStats` — CPU, memory, swap | `hw-monitor` (streams `hw.cpu`, `hw.memory`, question `hw.snapshot`) |
+| `SystemStats` — CPU, memory, swap | `hw-monitor` 0.4.0 (streams `hw.cpu`, `hw.memory`, question `hw.snapshot`) |
 
 ## Layout
 
