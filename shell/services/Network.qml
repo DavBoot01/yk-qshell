@@ -3,25 +3,16 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Networking
 
-// Network state from the native NetworkManager binding (Quickshell.Networking),
-// plus /proc/net/dev for traffic.
-//
-// Connection state is event-driven (no polling, no nmcli parsing). The only
-// external command is a one-shot `nmcli` call to read the IPv4 address, run when
-// the active interface changes (the binding does not expose IP addresses).
-//
-// ── Traffic poll (2 s) ───────────────────────────────────────────────────────
-// Reads /proc/net/dev (FileView) for the active interface and computes a
-// bytes/s delta against the previous sample.
+// The network, from the unit network of the shell's application: the connection from its stream and
+// question network.status, every change and none lost; the signal and the traffic from network.link, a
+// reading every 2 s while it flows. Nothing here speaks to NetworkManager or reads /proc.
 //
 // ── Properties ───────────────────────────────────────────────────────────────
 // Summary
-//   connected      — true if any wifi or ethernet interface is active
+//   connected      — true if a Wi-Fi or Ethernet device is the host's link
 //   type           — "wifi" | "ethernet" | "none"
-//   ssid           — Wi-Fi SSID or ethernet connection name; "" if none
+//   ssid           — Wi-Fi SSID or the device's name for Ethernet; "" if none
 //   ipAddress      — IPv4 address (e.g. "192.168.1.14"); "" if disconnected
 //   wifiSignal     — signal strength [0–100]; 0 for non-wifi
 //
@@ -31,120 +22,48 @@ import Quickshell.Networking
 Singleton {
     id: root
 
-    // ── Active interface ──────────────────────────────────────────────────────
-    // First connected wifi/wired device; re-evaluated on any device change.
-    readonly property var _primary: {
-        for (const d of Networking.devices.values) {
-            if (d.connected && (d.type === DeviceType.Wifi || d.type === DeviceType.Wired))
-                return d
-        }
-        return null
-    }
+    readonly property string unit: "network"
 
-    readonly property bool _isWifi: root._primary !== null && root._primary.type === DeviceType.Wifi
-
-    // The Network object the device is currently connected to (wifi) or its link.
-    readonly property var _activeNetwork: {
-        const d = root._primary
-        if (!d) return null
-        if (!root._isWifi) return d.network ?? null
-        for (const n of d.networks.values)
-            if (n.connected) return n
-        return null
-    }
+    property var _status: null
+    property var _link: null
+    readonly property var _connection: _status && _status.phase === "connected" ? _status.connection : null
 
     // ── Connection summary ────────────────────────────────────────────────────
-    readonly property bool   connected:  root._primary !== null
-    readonly property string type:       root._primary === null ? "none"
-                                         : (root._isWifi ? "wifi" : "ethernet")
-    readonly property string ssid:       root._activeNetwork?.name ?? (root._primary?.name ?? "")
-    readonly property int    wifiSignal: root._isWifi && root._activeNetwork
-                                         ? Math.round(root._activeNetwork.signalStrength * 100) : 0
-    property string ipAddress: ""
+    readonly property bool connected: _connection !== null && _connection !== undefined
+    readonly property string type: {
+        if (!connected)
+            return "none";
+        const kind = _connection.kind ?? (_link ? _link.kind : "");
+        return kind === "wifi" ? "wifi" : kind === "ethernet" ? "ethernet" : "none";
+    }
+    readonly property string ssid: connected ? (_connection.ssid ?? _connection.device ?? "") : ""
+    readonly property string ipAddress: connected && _connection.ip4 ? _connection.ip4.split("/")[0] : ""
+    readonly property int wifiSignal: type === "wifi" && _link && _link.signal_pct !== null ? _link.signal_pct : 0
 
     // ── Traffic ───────────────────────────────────────────────────────────────
-    property int rxBytesPerSec: 0
-    property int txBytesPerSec: 0
+    readonly property int rxBytesPerSec: _link && _link.rx_bytes_per_s !== null ? _link.rx_bytes_per_s : 0
+    readonly property int txBytesPerSec: _link && _link.tx_bytes_per_s !== null ? _link.tx_bytes_per_s : 0
 
     // ── Lifecycle ─────────────────────────────────────────────────────────────
-    // The native binding is event-driven; ready once the backend is up.
-    readonly property bool   ready:   Networking.backend !== NetworkBackendType.None
-    readonly property bool   loading: !root.ready
-    readonly property string error:   root.ready ? "" : "No network backend"
+    readonly property bool ready: _status !== null
+    readonly property bool loading: !ready && error === ""
+    readonly property string error: status.error || link.error
 
-    function initialize(): void {
-        if (_trafficTimer.running) return
-        _trafficTimer.running = true
+    function initialize(): void {}
+
+    StreamJoin {
+        id: status
+
+        unit: root.unit
+        stream: "network.status"
+        onValue: v => root._status = v
     }
 
-    Component.onCompleted: initialize()
+    StreamJoin {
+        id: link
 
-    // ── IPv4 address ──────────────────────────────────────────────────────────
-    readonly property string _deviceName: root._primary?.name ?? ""
-
-    on_DeviceNameChanged: {
-        root.ipAddress = ""
-        root._prevRx = 0
-        root._prevTx = 0
-        root._prevTime = 0
-        root.rxBytesPerSec = 0
-        root.txBytesPerSec = 0
-        if (root._deviceName !== "") _ipDelay.restart()
-    }
-
-    // Give NetworkManager a moment to finish DHCP before asking for the address.
-    Timer { id: _ipDelay; interval: 1500; onTriggered: _ipProc.running = true }
-
-    Process {
-        id: _ipProc
-        command: ["nmcli", "-t", "-f", "IP4.ADDRESS", "dev", "show", root._deviceName]
-        stdout: SplitParser {
-            onRead: line => {
-                const m = line.match(/^IP4\.ADDRESS\[1\]:([\d.]+)/)
-                if (m) root.ipAddress = m[1]
-            }
-        }
-    }
-
-    // ── Traffic sampling ──────────────────────────────────────────────────────
-    property real _prevRx:   0
-    property real _prevTx:   0
-    property real _prevTime: 0
-
-    Timer {
-        id: _trafficTimer
-        interval: 2000
-        running:  false
-        repeat:   true
-        onTriggered: if (root._deviceName !== "") root._sampleTraffic()
-    }
-
-    // rx/tx bytes of the active interface from /proc/net/dev.
-    FileView { id: _netDev; path: "/proc/net/dev"; blockLoading: true }
-
-    function _sampleTraffic(): void {
-        _netDev.reload()
-        const prefix = root._deviceName + ":"
-        for (const line of _netDev.text().split("\n")) {
-            const t = line.trim()
-            if (!t.startsWith(prefix)) continue
-            // "<dev>: rx_bytes … (8 rx fields) tx_bytes …"
-            const f  = t.slice(prefix.length).trim().split(/\s+/)
-            const rx = parseFloat(f[0])
-            const tx = parseFloat(f[8])
-            const now = Date.now()
-
-            if (root._prevTime > 0 && rx >= root._prevRx && tx >= root._prevTx) {
-                const dt = (now - root._prevTime) / 1000   // seconds
-                if (dt > 0) {
-                    root.rxBytesPerSec = Math.round((rx - root._prevRx) / dt)
-                    root.txBytesPerSec = Math.round((tx - root._prevTx) / dt)
-                }
-            }
-            root._prevRx   = rx
-            root._prevTx   = tx
-            root._prevTime = now
-            return
-        }
+        unit: root.unit
+        stream: "network.link"
+        onValue: v => root._link = v
     }
 }

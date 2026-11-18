@@ -14,6 +14,11 @@ units:
     plugin: com.yoke.power
     exec: components/plugins/power
     digest: sha256:ca1fb6e96ad66ec692dde948bfc1d63b4f83bf549a9aaef2ceb39553f3fb4cce
+  network:
+    kind: plugin
+    plugin: com.yoke.network
+    exec: components/plugins/network
+    digest: sha256:2227e4e532069f2f042aef79e9596b326d19dd5f6a03406e442fe4b14f27d71a
 channels:
   shell:
     transport: local

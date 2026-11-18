@@ -17,3 +17,12 @@ plugins:
     arch: x86_64
     digest: sha256:ca1fb6e96ad66ec692dde948bfc1d63b4f83bf549a9aaef2ceb39553f3fb4cce
     taken: 2026-11-18T16:58:52Z
+  - id: com.yoke.network
+    unit: network
+    source: https://github.com/yoke-project/yoke-plugin-network
+    tag: v0.2.0
+    commit: c8cd7260e76c000d9d54933c03033e190b93e68d
+    clean: true
+    arch: x86_64
+    digest: sha256:2227e4e532069f2f042aef79e9596b326d19dd5f6a03406e442fe4b14f27d71a
+    taken: 2026-11-18T17:07:56Z

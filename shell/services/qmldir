@@ -1,5 +1,6 @@
 module qs.services
 singleton Yoke         1.0 Yoke.qml
+StreamJoin             1.0 StreamJoin.qml
 singleton AppLauncher  1.0 AppLauncher.qml
 singleton AudioService 1.0 AudioService.qml
 singleton Battery      1.0 Battery.qml

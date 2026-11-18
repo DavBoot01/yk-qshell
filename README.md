@@ -18,7 +18,8 @@ the application one at a time; until a service has, it reads the system as `my-q
 | --- | --- |
 | `SystemStats` — CPU, memory, swap | `hw-monitor` 0.4.0 (streams `hw.cpu`, `hw.memory`, question `hw.snapshot`) |
 | `Battery` | `power` 0.2.0 (stream and question `power.status`) |
-| `Network`, `WiFiService` | Quickshell's NetworkManager binding, until they move onto `network` |
+| `Network` | `network` 0.2.0 (streams and questions `network.status`, `network.link`) |
+| `WiFiService` | `network` 0.2.0 (stream `network.scan` while the Wi-Fi tab is open, question `network.access-points`, commands to scan, connect and disconnect) |
 | `SystemInfo` | `/etc/os-release` |
 | `AudioService`, `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
 
@@ -27,7 +28,7 @@ the application one at a time; until a service has, it reads the system as `my-q
 | Path | What it is |
 | --- | --- |
 | `app/` | The Yoke application, made with `yoke-compose`: its Plugins (`plugins.yaml`, `manifests/`) and the channel `shell`, a local socket for one client, that no unit is launched for |
-| `shell/` | The Quickshell configuration. `services/Yoke.qml` holds the one attachment to the channel; each service built on it joins a Plugin's present to what follows, by the sequence the Plugin states |
+| `shell/` | The Quickshell configuration. `services/Yoke.qml` holds the one attachment to the channel; `services/StreamJoin.qml` joins a Plugin's present to what its stream brings after, by the sequence the Plugin states, and the services are built on the two |
 | `scripts/run.sh` | Runs the application on a local Core, grants its Plugins what they declare, and starts the shell beside it |
 
 ## Running it
