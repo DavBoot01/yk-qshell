@@ -19,8 +19,8 @@ QtObject {
     // the panel's page tabs, then the panel drops at its own width, then its
     // content fades in; closing runs it backwards.
     property bool morph:          true
-    property int  openDuration:   520
-    property int  closeDuration:  360
+    property int  openDuration:   760
+    property int  closeDuration:  520
     // The panel's width: a share of the screen's, within these bounds.
     property real widthFraction:  0.40
     property real minWidth:       560
@@ -28,9 +28,15 @@ QtObject {
     // Room the widened tab leaves to the side tabs.
     property real tabGap:         24
     // Each stage's [start, end], as shares of the time.
-    property var  chipsStage:     [0.00, 0.15]
+    property var  chipsStage:     [0.00, 0.18]
     property var  widenStage:     [0.00, 0.38]
-    property var  headerStage:    [0.18, 0.42]
+    // The active page's tab; each further one starts `tabStagger` later, in
+    // order of distance from it, so the row composes outwards from the page.
+    property var  headerStage:    [0.16, 0.40]
+    property real tabStagger:     0.06
+    // The chips rise out of the tab towards the screen's edge, the page tabs
+    // rise into it from the panel's side: by this far.
+    property real swapRise:       12
     property var  dropStage:      [0.28, 0.88]
     property var  contentStage:   [0.60, 1.00]
     // How far the content rises as it fades in.

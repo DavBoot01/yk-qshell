@@ -35,8 +35,9 @@ import qs.services
 // The centre tab grows the centre panel out of itself, as a drawer. One
 // progress `_dropT`, linear in time, drives eased stages
 // (Theme.centerDropdown.*Stage): the pill's chips fade out while the tab widens
-// along the bar — as far as the side tabs let it; the page tabs (`centerTabs`)
-// fade in where the chips were; the panel drops from the tab at its own width,
+// along the bar — as far as the side tabs let it, the chips rising out of it
+// towards the screen's edge; the page tabs (`centerTabs`) rise into it from the
+// panel's side, the active page's first and the others outwards from it; the panel drops from the tab at its own width,
 // in the tab's outline (BarTab's drop); its content fades in last. Closing runs
 // `_dropT` back to 0, so everything goes back in the reverse order. The window
 // is tall enough for the panel at all times; the input mask follows what is
@@ -166,7 +167,6 @@ Scope {
             }
             readonly property real _sChips:   barWindow._stage(Theme.centerDropdown.chipsStage)
             readonly property real _sWiden:   barWindow._stage(Theme.centerDropdown.widenStage)
-            readonly property real _sHeader:  barWindow._stage(Theme.centerDropdown.headerStage)
             readonly property real _sDrop:    barWindow._stage(Theme.centerDropdown.dropStage)
             readonly property real _sContent: barWindow._stage(Theme.centerDropdown.contentStage)
 
@@ -457,74 +457,97 @@ Scope {
                     screen:    barWindow.modelData
                     styleMode: root.centerStyle
                     content:   root.centerContent
-                    // Gives way to the page tabs while the centre panel is open.
+                    // Gives way to the page tabs while the centre panel is open:
+                    // rises towards the screen's edge as it fades.
                     opacity:   1 - barWindow._sChips
                     enabled:   barWindow._sChips < 0.5
                     visible:   opacity > 0
+                    transform: Translate { y: -barWindow._sChips * Theme.centerDropdown.swapRise }
                 }
 
                 // ── Page tabs (centre panel open) ─────────────────────────────
                 // Where the chips were: the active page with its icon and
                 // label, the others by their icon; a click turns the page, and
                 // the active one closes the panel.
-                Row {
-                    id: pageTabs
-                    anchors.verticalCenter: parent.verticalCenter
-                    x:       Math.round(barWindow._cx - width / 2)
+                // Clipped to the tab's body, so each tab rises in from its
+                // bottom edge — the panel's side.
+                Item {
+                    x:       barWindow._cx - width / 2
+                    width:   barWindow._bodyWidth
+                    height:  parent.height
                     z:       2
-                    spacing: 4
-                    opacity: barWindow._sHeader
-                    visible: opacity > 0 && root.centerTabs.length > 0
-                    enabled: barWindow._dropOpen
+                    clip:    true
+                    visible: barWindow._dropT > Theme.centerDropdown.headerStage[0] && root.centerTabs.length > 0
 
-                    Repeater {
-                        model: root.centerTabs
-                        delegate: Rectangle {
-                            id: pageTab
-                            required property var modelData
-                            readonly property bool _active: PanelManager.activeContentId === modelData.id
-                                || (!barWindow._dropOpen && barWindow._lastPage === modelData.id)
+                    Row {
+                        id: pageTabs
+                        anchors.verticalCenter: parent.verticalCenter
+                        x:       Math.round((parent.width - width) / 2)
+                        spacing: 4
+                        enabled: barWindow._dropOpen
 
-                            height: Theme.sizes.barHeight - Theme.bar.pill.verticalMargin * 2
-                            width:  tabRow.implicitWidth + 20
-                            radius: height / 2
-                            color:  pageTab._active ? Theme.widget.activeBackground
-                                  : tabMouse.containsMouse ? Theme.widget.hoverBackground : "transparent"
+                        Repeater {
+                            model: root.centerTabs
+                            delegate: Rectangle {
+                                id: pageTab
+                                required property var modelData
+                                required property int index
+                                readonly property bool _active: PanelManager.activeContentId === modelData.id
+                                    || (!barWindow._dropOpen && barWindow._lastPage === modelData.id)
 
-                            Behavior on width { NumberAnimation { duration: Theme.animation.duration; easing.type: Easing.OutCubic } }
-                            Behavior on color { ColorAnimation  { duration: Theme.animation.duration } }
+                                // 0 for the page the panel opened on, then by distance.
+                                readonly property int _rank: {
+                                    const a = root.centerTabs.findIndex(t => t.id === barWindow._lastPage)
+                                    return a < 0 ? pageTab.index : Math.abs(pageTab.index - a)
+                                }
+                                readonly property real _shown: barWindow._stage([
+                                    Theme.centerDropdown.headerStage[0] + pageTab._rank * Theme.centerDropdown.tabStagger,
+                                    Theme.centerDropdown.headerStage[1] + pageTab._rank * Theme.centerDropdown.tabStagger])
 
-                            Row {
-                                id: tabRow
-                                anchors.centerIn: parent
-                                spacing: 6
+                                opacity:   pageTab._shown
+                                transform: Translate { y: (1 - pageTab._shown) * Theme.centerDropdown.swapRise }
 
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text:           pageTab.modelData.icon
-                                    color:          pageTab._active ? Theme.colors.primary : Theme.widget.textColorDim
-                                    font.family:    Theme.widget.fontFamily
-                                    font.pixelSize: Theme.widget.fontSize
+                                height: Theme.sizes.barHeight - Theme.bar.pill.verticalMargin * 2
+                                width:  tabRow.implicitWidth + 20
+                                radius: height / 2
+                                color:  pageTab._active ? Theme.widget.activeBackground
+                                      : tabMouse.containsMouse ? Theme.widget.hoverBackground : "transparent"
+
+                                Behavior on width { NumberAnimation { duration: Theme.animation.duration; easing.type: Easing.OutCubic } }
+                                Behavior on color { ColorAnimation  { duration: Theme.animation.duration } }
+
+                                Row {
+                                    id: tabRow
+                                    anchors.centerIn: parent
+                                    spacing: 6
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text:           pageTab.modelData.icon
+                                        color:          pageTab._active ? Theme.colors.primary : Theme.widget.textColorDim
+                                        font.family:    Theme.widget.fontFamily
+                                        font.pixelSize: Theme.widget.fontSize
+                                    }
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        visible:        pageTab._active
+                                        text:           Translation.tr(pageTab.modelData.label)
+                                        color:          Theme.widget.textColor
+                                        font.family:    Theme.widget.fontFamily
+                                        font.pixelSize: Theme.widget.fontSize
+                                        font.bold:      true
+                                    }
                                 }
 
-                                Text {
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    visible:        pageTab._active
-                                    text:           Translation.tr(pageTab.modelData.label)
-                                    color:          Theme.widget.textColor
-                                    font.family:    Theme.widget.fontFamily
-                                    font.pixelSize: Theme.widget.fontSize
-                                    font.bold:      true
+                                MouseArea {
+                                    id: tabMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape:  Qt.PointingHandCursor
+                                    onClicked: PanelManager.toggle("center-dropdown", pageTab.modelData.id,
+                                                                   PanelManager.activeContent, barWindow.modelData)
                                 }
-                            }
-
-                            MouseArea {
-                                id: tabMouse
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape:  Qt.PointingHandCursor
-                                onClicked: PanelManager.toggle("center-dropdown", pageTab.modelData.id,
-                                                               PanelManager.activeContent, barWindow.modelData)
                             }
                         }
                     }
