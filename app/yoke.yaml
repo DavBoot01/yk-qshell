@@ -29,6 +29,11 @@ units:
     plugin: com.yoke.audio
     exec: components/plugins/audio
     digest: sha256:dd17a0d3860696cd211ece961e3fb506c1c9f134862c2553b7215915bdc6ded8
+  sensors:
+    kind: plugin
+    plugin: com.yoke.sensors
+    exec: components/plugins/sensors
+    digest: sha256:1ce77dfc91a1c6a7719040dc2f014f7571e862e228670902134f910df6177efb
 channels:
   shell:
     transport: local

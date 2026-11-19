@@ -8,6 +8,7 @@ singleton BluetoothService 1.0 BluetoothService.qml
 singleton DateTime     1.0 DateTime.qml
 singleton Network      1.0 Network.qml
 singleton PanelManager 1.0 PanelManager.qml
+singleton Sensors      1.0 Sensors.qml
 singleton SystemInfo   1.0 SystemInfo.qml
 singleton SystemStats  1.0 SystemStats.qml
 singleton Translation  1.0 Translation.qml

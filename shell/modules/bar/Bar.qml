@@ -29,7 +29,7 @@ import qs.functions
 //
 // ── IPC ───────────────────────────────────────────────────────────────────────
 // Panels can be toggled from the compositor (opens on the first screen):
-//   qs ipc call panels toggle <clock|system|network|audio|wifi>
+//   qs ipc call panels toggle <clock|system|sensors|network|audio|wifi|bluetooth>
 //   qs ipc call panels close
 BarContainer {
     id: bar
@@ -49,6 +49,7 @@ BarContainer {
             switch (name) {
             case "clock":
             case "system":
+            case "sensors":
             case "network":
                 PanelManager.toggle("center-dropdown", name, bar._carouselContent, screen)
                 break
@@ -93,7 +94,7 @@ BarContainer {
         }
     }
 
-    // ── Center pill: cpu · ram · network ─────────────────────────────────────────
+    // ── Center pill: cpu · ram · sensors · network ───────────────────────────────
     centerContent: Component {
         Row {
             spacing: Theme.bar.itemSpacing
@@ -123,6 +124,22 @@ BarContainer {
                         usedPercent: SystemStats.ramUsedPercent
                         usedMiB:     SystemStats.ramUsedMiB
                         totalMiB:    SystemStats.ramTotalMiB
+                    }
+                }
+            }
+
+            // Sensors — the CPU's temperature and every other one; opens carousel at "sensors" page
+            BarChip {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: Sensors.present
+                panelId:        "center-dropdown"
+                panelContentId: "sensors"
+                panelContent:   bar._carouselContent
+                content: Component {
+                    SensorsWidget {
+                        celsius:      Sensors.cpuCelsius
+                        level:        Sensors.level
+                        temperatures: Sensors.temperatures
                     }
                 }
             }

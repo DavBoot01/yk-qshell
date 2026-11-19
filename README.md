@@ -2,7 +2,7 @@
 
 A desktop shell for Wayland and Hyprland, written in QML with [Quickshell](https://quickshell.outfoxxed.me/),
 whose view of the system comes from a [Yoke](https://github.com/yoke-project) application: what the shell
-shows of the CPU, the memory, the network, the power and Bluetooth is what the application's Plugins say,
+shows of the CPU, the memory, the temperatures, the network, the power and Bluetooth is what the application's Plugins say,
 read through the interface contract with the QML binding of `yoke-sdk-cpp`. What belongs to the compositor
 or to the shell itself — workspaces, the tray, the launcher — stays Quickshell's.
 
@@ -22,6 +22,7 @@ the application one at a time; until a service has, it reads the system as `my-q
 | `WiFiService` | `network` 0.2.0 (stream `network.scan` while the Wi-Fi tab is open, question `network.access-points`, commands to scan, connect and disconnect) |
 | `BluetoothService` — new: a bar chip and a Bluetooth tab in the right panel | `bluetooth` 0.1.0 (stream and question `bluetooth.status`, with a pairing waiting for the person; `bluetooth.devices` and `bluetooth.scan` while the tab is open; commands to power, pair, connect, disconnect, forget and answer a pairing) |
 | `SystemInfo` | `/etc/os-release` |
+| `Sensors` — new: a bar chip with the CPU's temperature and a dot for every other one, and a centre page with every sensor, one's history, and the occurrences | `sensors` 0.1.0 (stream `sensors.readings`, questions `sensors.snapshot` and `sensors.history`, its occurrences on the standing subscription; the level of each sensor is the Plugin's) |
 | `AudioService` — the default output's volume and mute | `audio` 0.1.0 (stream and question `audio.status`, commands `audio.volume.set` and `audio.mute.set`) |
 | `TrayService`, `Workspace`, `AppLauncher` | Quickshell: the shell's own, and they stay so |
 

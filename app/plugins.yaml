@@ -44,3 +44,12 @@ plugins:
     arch: x86_64
     digest: sha256:dd17a0d3860696cd211ece961e3fb506c1c9f134862c2553b7215915bdc6ded8
     taken: 2026-11-18T18:59:28Z
+  - id: com.yoke.sensors
+    unit: sensors
+    source: https://github.com/yoke-project/yoke-plugin-sensors
+    tag: v0.1.0
+    commit: 59eaf271bc0438cbcc1e21fda5b1514a43065ee6
+    clean: true
+    arch: x86_64
+    digest: sha256:1ce77dfc91a1c6a7719040dc2f014f7571e862e228670902134f910df6177efb
+    taken: 2026-11-19T15:07:03Z

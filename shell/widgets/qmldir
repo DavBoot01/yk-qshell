@@ -11,3 +11,5 @@ TrayBar               1.0 TrayBar.qml
 TrayIcon              1.0 TrayIcon.qml
 WorkspaceIndicator    1.0 WorkspaceIndicator.qml
 BluetoothWidget  1.0 BluetoothWidget.qml
+SensorsWidget    1.0 SensorsWidget.qml
+CircularGauge    1.0 CircularGauge.qml

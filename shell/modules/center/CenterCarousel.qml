@@ -34,11 +34,13 @@ Item {
     readonly property var pages: [
         { id: "clock",   component: clockPage   },
         { id: "system",  component: systemPage  },
+        { id: "sensors", component: sensorsPage },
         { id: "network", component: networkPage }
     ]
 
     Component { id: clockPage;   ClockPage   {} }
     Component { id: systemPage;  SystemPage  {} }
+    Component { id: sensorsPage; SensorsPage {} }
     Component { id: networkPage; NetworkPage {} }
 
     readonly property int _pageCount: root.pages.length
