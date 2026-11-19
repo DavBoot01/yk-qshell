@@ -38,6 +38,14 @@ BarContainer {
     // Shared carousel Component — one instance, referenced by all panel chips.
     property Component _carouselContent: Component { CenterCarousel {} }
 
+    // The centre panel's pages, as the centre tab shows them while it is open.
+    centerTabs: [
+        { id: "clock",   icon: "󰥔", label: "Clock"   },
+        { id: "system",  icon: "󰻠", label: "System"  },
+        { id: "sensors", icon: "󰔏", label: "Sensors" },
+        { id: "network", icon: "󰛳", label: "Network" }
+    ]
+
     // Shared right-panel Component — audio and wifi chips open the same tab host.
     property Component _rightPanelContent: Component { RightPanel {} }
 

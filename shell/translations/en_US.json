@@ -46,5 +46,8 @@
   "cooling": "cooling",
   "pressure": "pressure",
   "illuminance": "illuminance",
-  "sensors": "sensors"
+  "sensors": "sensors",
+  "Clock": "Clock",
+  "System": "System",
+  "Network": "Network"
 }

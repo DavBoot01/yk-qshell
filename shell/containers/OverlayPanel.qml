@@ -60,6 +60,10 @@ PanelWindow {
     property real  shadowOffsetX:  0
     property real  shadowOffsetY:  4
 
+    // false: the panel never opens; another container draws it (the centre
+    // panel, when the tab it hangs from grows it — see BarContainer).
+    property bool  active: true
+
     // Dim layer behind the panel (0 = none).
     property real  dimOpacity: 0
     property color dimColor:   "#000000"
@@ -146,6 +150,7 @@ PanelWindow {
     // ── State transitions ─────────────────────────────────────────────────────
     Connections {
         target: PanelManager
+        enabled: win.active
         function onActivePanelIdChanged(): void {
             if (PanelManager.activePanelId === win.panelId) {
                 closeAnim.stop()

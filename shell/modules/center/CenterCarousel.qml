@@ -45,6 +45,10 @@ Item {
 
     readonly property int _pageCount: root.pages.length
 
+    // The centre tab shows the pages while the panel grows from it (Theme
+    // centerDropdown.morph): the dots would say the same twice.
+    readonly property bool _dots: !(Theme.bar.shape === "tabs" && Theme.centerDropdown.morph)
+
     function _indexOf(contentId: string): int {
         const i = root.pages.findIndex(p => p.id === contentId)
         return i >= 0 ? i : 0
@@ -73,8 +77,8 @@ Item {
     Item {
         id: pagesRow
         anchors.top:    parent.top
-        anchors.bottom: dotRow.top
-        anchors.bottomMargin: 4
+        anchors.bottom: root._dots ? dotRow.top : parent.bottom
+        anchors.bottomMargin: root._dots ? 4 : 0
         width:  root.width * root._pageCount
         // x: managed imperatively by snapToPage() and DragHandler
 
@@ -98,6 +102,7 @@ Item {
     // ── Dot indicators ────────────────────────────────────────────────────────
     Row {
         id: dotRow
+        visible: root._dots
         anchors.bottom:           parent.bottom
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottomMargin:     8

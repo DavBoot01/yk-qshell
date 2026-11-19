@@ -46,5 +46,8 @@
   "cooling": "raffreddamento",
   "pressure": "pressione",
   "illuminance": "luce",
-  "sensors": "sensori"
+  "sensors": "sensori",
+  "Clock": "Orologio",
+  "System": "Sistema",
+  "Network": "Rete"
 }

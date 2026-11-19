@@ -13,6 +13,10 @@ OverlayPanel {
     panelId: "center-dropdown"
     edge:    "top"
 
+    // With the bar drawn as tabs, the centre tab grows this panel out of itself
+    // (BarContainer); this window serves the strip shape alone.
+    active: !(Theme.bar.shape === "tabs" && Theme.centerDropdown.morph)
+
     // Panel rests below the bar (strip + floating margins).
     topInset: Theme.sizes.barHeight
         + (Theme.bar.floating ? Theme.bar.floatingMargin * 2 : 0)
