@@ -40,13 +40,12 @@ BarContainer {
 
     // The centre panel's pages, as the centre tab shows them while it is open.
     centerTabs: [
-        { id: "clock",   icon: "󰥔", label: "Clock"   },
         { id: "system",  icon: "󰻠", label: "System"  },
         { id: "sensors", icon: "󰔏", label: "Sensors" },
         { id: "network", icon: "󰛳", label: "Network" }
     ]
 
-    // Shared right-panel Component — audio and wifi chips open the same tab host.
+    // Shared right-panel Component — the audio, Wi-Fi, Bluetooth and clock chips open it.
     property Component _rightPanelContent: Component { RightPanel {} }
 
     IpcHandler {
@@ -55,7 +54,6 @@ BarContainer {
         function toggle(name: string): void {
             const screen = Quickshell.screens.length > 0 ? Quickshell.screens[0] : null
             switch (name) {
-            case "clock":
             case "system":
             case "sensors":
             case "network":
@@ -64,6 +62,7 @@ BarContainer {
             case "audio":
             case "wifi":
             case "bluetooth":
+            case "clock":
                 PanelManager.toggle("side-right", name, bar._rightPanelContent, screen)
                 break
             default:
@@ -244,12 +243,12 @@ BarContainer {
                 }
             }
 
-            // Clock — opens the carousel at its "clock" page
+            // Clock — opens the right panel at its calendar
             BarChip {
                 anchors.verticalCenter: parent.verticalCenter
-                panelId:        "center-dropdown"
+                panelId:        "side-right"
                 panelContentId: "clock"
-                panelContent:   bar._carouselContent
+                panelContent:   bar._rightPanelContent
                 content: Component {
                     DateTimeView {
                         hours:   DateTime.hours

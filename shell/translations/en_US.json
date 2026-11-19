@@ -49,5 +49,6 @@
   "sensors": "sensors",
   "Clock": "Clock",
   "System": "System",
-  "Network": "Network"
+  "Network": "Network",
+  "Today": "Today"
 }

@@ -5,3 +5,6 @@ WiFiPanel       1.0 WiFiPanel.qml
 NetworkListItem 1.0 NetworkListItem.qml
 BluetoothPanel    1.0 BluetoothPanel.qml
 BluetoothListItem 1.0 BluetoothListItem.qml
+ClockPage         1.0 ClockPage.qml
+CalCell           1.0 CalCell.qml
+CalButton         1.0 CalButton.qml

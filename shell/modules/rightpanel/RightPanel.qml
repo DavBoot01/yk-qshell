@@ -9,10 +9,10 @@ import qs.services
 
 // RightPanel — the right side panel's pages.
 //
-// Three pages: "audio", "wifi" and "bluetooth", each opened by its own chip in
-// the bar, so the panel carries no tabs of its own. The page shown is
-// PanelManager.activeContentId; a StackLayout swaps AudioPanel, WiFiPanel and
-// BluetoothPanel.
+// Four pages: "audio", "wifi", "bluetooth" and "clock", each opened by its own
+// chip in the bar, so the panel carries no tabs of its own. The page shown is
+// PanelManager.activeContentId; a StackLayout swaps AudioPanel, WiFiPanel,
+// BluetoothPanel and ClockPage.
 //
 // `preferredHeight` is the shown page's: the panel fits it.
 Item {
@@ -42,10 +42,12 @@ Item {
         anchors.fill: parent
 
         currentIndex: root._page === "wifi" ? 1
-                    : root._page === "bluetooth" ? 2 : 0
+                    : root._page === "bluetooth" ? 2
+                    : root._page === "clock" ? 3 : 0
 
         AudioPanel     {}
         WiFiPanel      {}
         BluetoothPanel {}
+        ClockPage      {}
     }
 }

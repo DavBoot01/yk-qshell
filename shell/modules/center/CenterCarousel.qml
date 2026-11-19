@@ -32,13 +32,11 @@ Item {
     // ── Pages ─────────────────────────────────────────────────────────────────
     // `id` is the PanelManager contentId that selects the page.
     readonly property var pages: [
-        { id: "clock",   component: clockPage   },
         { id: "system",  component: systemPage  },
         { id: "sensors", component: sensorsPage },
         { id: "network", component: networkPage }
     ]
 
-    Component { id: clockPage;   ClockPage   {} }
     Component { id: systemPage;  SystemPage  {} }
     Component { id: sensorsPage; SensorsPage {} }
     Component { id: networkPage; NetworkPage {} }
