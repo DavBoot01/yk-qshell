@@ -18,6 +18,16 @@ Item {
     implicitWidth:  parent ? parent.width  : 0
     implicitHeight: parent ? parent.height : 0
 
+    // The page shown, kept while the panel closes and the manager has let go.
+    property string _page: PanelManager.activeContentId
+    Connections {
+        target: PanelManager
+        function onActiveContentIdChanged(): void {
+            if (PanelManager.activePanelId === "side-right")
+                root._page = PanelManager.activeContentId
+        }
+    }
+
     // ── Tab bar ───────────────────────────────────────────────────────────────
     Row {
         id: tabBar
@@ -113,8 +123,8 @@ Item {
         }
         anchors.topMargin: 10
 
-        currentIndex: PanelManager.activeContentId === "wifi" ? 1
-                    : PanelManager.activeContentId === "bluetooth" ? 2 : 0
+        currentIndex: root._page === "wifi" ? 1
+                    : root._page === "bluetooth" ? 2 : 0
 
         AudioPanel     {}
         WiFiPanel      {}

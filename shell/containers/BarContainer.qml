@@ -31,17 +31,22 @@ import qs.services
 // The input mask (_maskTarget) always exposes at least hoverRegionHeight pixels
 // at the top of the window so hover events reach the window even when hidden.
 //
-// ── Centre panel (shape "tabs", Theme.centerDropdown.morph) ──────────────────
-// The centre tab grows the centre panel out of itself, as a drawer. One
-// progress `_dropT`, linear in time, drives eased stages
-// (Theme.centerDropdown.*Stage): the pill's chips fade out while the tab widens
-// along the bar — as far as the side tabs let it, the chips rising out of it
-// towards the screen's edge; the page tabs (`centerTabs`) rise into it from the
-// panel's side, the active page's first and the others outwards from it; the panel drops from the tab at its own width,
-// in the tab's outline (BarTab's drop); its content fades in last. Closing runs
-// `_dropT` back to 0, so everything goes back in the reverse order. The window
-// is tall enough for the panel at all times; the input mask follows what is
-// open.
+// ── Panels grown from the tabs (shape "tabs", top bar) ─────────────────────
+// The centre tab grows the centre panel out of itself, as a drawer (TabDrawer,
+// Theme.centerDropdown.morph): the pill's chips rise out of the tab while it
+// widens along the bar — as far as the side tabs let it; the panel's page tabs
+// (`centerTabs`, PageTabs) rise into it; the panel drops from the tab in its
+// outline (BarTab's drop); its content fades in last.
+//
+// The right panel grows out of the right tab's outer bottom corner, as if the
+// bar burst open there: in one outline with the tab (SideDock), its width and
+// height grow from the corner, flush with the tab's right side and standing off
+// the screen's; the tab's flares give way to convex corners, so the open panel
+// is one card rounded alike all round; its content comes in last, drifting out
+// of the corner (Theme.sidePanel.morph). It dims the screen behind it.
+//
+// Closing runs either backwards. The window spans the screen while either can
+// open; the input mask follows what shows.
 //
 // ── Blur ──────────────────────────────────────────────────────────────────────
 // Compositor-side blur. Enable in Hyprland:
@@ -88,7 +93,7 @@ Scope {
 
             WlrLayershell.namespace:     "myshell:bar"
             WlrLayershell.layer:         WlrLayer.Top
-            WlrLayershell.keyboardFocus: barWindow._dropOpen ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
+            WlrLayershell.keyboardFocus: centerDrawer.open || rightDrawer.open ? WlrKeyboardFocus.OnDemand : WlrKeyboardFocus.None
 
             color: "transparent"
 
@@ -120,140 +125,126 @@ Scope {
             readonly property real _reservedHeight: Theme.sizes.barHeight
                 + (root._floating ? Theme.bar.floatingMargin * 2 : 0)
 
-            // Window is taller than _reservedHeight when shadow needs extra room,
-            // and by the centre panel's height when the tab grows it.
-            implicitHeight: _reservedHeight
-                + (root._floating && Theme.bar.stripShadowEnabled
-                   ? Theme.bar.stripShadowRadius
-                     + Math.max(Theme.bar.stripShadowOffsetY, 0)
-                   : 0)
-                + (barWindow._morph ? barWindow._dropFullHeight + Theme.surface.rimWidth * 2 : 0)
-
-            // ── Centre panel grown from the tab ───────────────────────────────
-            readonly property bool _morph: root._tabs && Theme.centerDropdown.morph
-                && root.position === "top"
-
-            readonly property bool _dropOpen: barWindow._morph
-                && PanelManager.activePanelId === "center-dropdown"
-                && (PanelManager.activeScreen ?? barWindow.modelData) === barWindow.modelData
-
-            readonly property real _dropFullWidth: Math.max(
-                Math.min(barWindow.modelData.width * Theme.centerDropdown.widthFraction,
-                         Theme.centerDropdown.maxWidth),
-                Theme.centerDropdown.minWidth, barWindow._restWidth)
-
-            // The centre tab's body: at rest around its pill, open as wide as
-            // the panel or as the side tabs allow.
-            readonly property real _cx: centerPill.x + centerPill.width / 2
-            readonly property real _restWidth: centerPill.width + Theme.bar.tabPadding * 2
-            readonly property real _roomWidth: 2 * (Math.min(
-                    barWindow._cx - (leftPill.x + leftPill.width),
-                    rightPill.x - barWindow._cx)
-                - Theme.bar.tabPadding - Theme.bar.tabFlare * 2 - Theme.centerDropdown.tabGap)
-            readonly property real _openWidth: Math.max(barWindow._restWidth,
-                Math.min(barWindow._dropFullWidth, barWindow._roomWidth))
-            readonly property real _dropFullHeight: Math.min(
-                Math.round(barWindow.modelData.height / 4), Theme.sizes.centerDropdownMaxHeight)
-
-            // Linear in time; the channels below ease it.
-            property real _dropT: 0
-
-            function _ease(x: real): real {
-                const c = Math.max(0, Math.min(1, x))
-                return 1 - Math.pow(1 - c, 4)
-            }
-            function _stage(range: var): real {
-                return barWindow._ease((barWindow._dropT - range[0]) / Math.max(0.001, range[1] - range[0]))
-            }
-            readonly property real _sChips:   barWindow._stage(Theme.centerDropdown.chipsStage)
-            readonly property real _sWiden:   barWindow._stage(Theme.centerDropdown.widenStage)
-            readonly property real _sDrop:    barWindow._stage(Theme.centerDropdown.dropStage)
-            readonly property real _sContent: barWindow._stage(Theme.centerDropdown.contentStage)
-
-            readonly property real _bodyWidth: barWindow._restWidth
-                + (barWindow._openWidth - barWindow._restWidth) * barWindow._sWiden
-            readonly property real _dropWidth: barWindow._bodyWidth
-                + (barWindow._dropFullWidth - barWindow._bodyWidth) * barWindow._sDrop
-            readonly property real _dropHeight: barWindow._dropFullHeight * barWindow._sDrop
-
-            // The content stays while the panel closes, even when another panel
-            // has already taken the manager.
-            property Component _dropContent: null
-            // The page shown last, so the page tabs keep it while closing.
-            property string _lastPage: ""
-            Connections {
-                target: PanelManager
-                function onActiveContentIdChanged(): void {
-                    if (barWindow._dropOpen)
-                        barWindow._lastPage = PanelManager.activeContentId
-                }
-            }
-            Binding {
-                target:      barWindow
-                property:    "_dropContent"
-                value:       PanelManager.activeContent
-                when:        barWindow._dropOpen
-                restoreMode: Binding.RestoreNone
-            }
-
-            on_DropOpenChanged: {
-                // A reversal mid-way takes the share of the time that is left.
-                if (barWindow._dropOpen) {
-                    barWindow._lastPage = PanelManager.activeContentId
-                    dropClose.stop()
-                    dropOpenAnim.duration = Theme.centerDropdown.openDuration * (1 - barWindow._dropT)
-                    dropOpenAnim.restart()
-                } else if (barWindow._dropT > 0) {
-                    dropOpenAnim.stop()
-                    dropClose.duration = Theme.centerDropdown.closeDuration * barWindow._dropT
-                    dropClose.restart()
-                }
-            }
-
-            NumberAnimation {
-                id: dropOpenAnim
-                target: barWindow; property: "_dropT"; to: 1
-            }
-            NumberAnimation {
-                id: dropClose
-                target: barWindow; property: "_dropT"; to: 0
-                onFinished: barWindow._dropContent = null
-            }
-
-            Shortcut {
-                sequence:    "Escape"
-                enabled:     barWindow._dropOpen
-                onActivated: PanelManager.close()
-            }
+            // Window: the strip, and room for its shadow; with a panel grown
+            // from a tab, the whole screen, so the panel fits — the input mask
+            // keeps to what shows.
+            readonly property bool _morphTop: root._tabs && root.position === "top"
+            implicitHeight: barWindow._morphTop && (Theme.centerDropdown.morph || Theme.sidePanel.morph)
+                ? barWindow.modelData.height
+                : _reservedHeight
+                  + (root._floating && Theme.bar.stripShadowEnabled
+                     ? Theme.bar.stripShadowRadius
+                       + Math.max(Theme.bar.stripShadowOffsetY, 0)
+                     : 0)
 
             // Exclusive zone: reserve screen space only while strip is visible.
             exclusiveZone: barWindow._mustShow ? barWindow._reservedHeight : 0
 
+            // ── Centre panel, grown from the centre tab ───────────────────────
+            TabDrawer {
+                id: centerDrawer
+                panelId: "center-dropdown"
+                screen:  barWindow.modelData
+                style:   Theme.centerDropdown
+                enabled: barWindow._morphTop && Theme.centerDropdown.morph
+            }
+
+            readonly property real _cx: centerPill.x + centerPill.width / 2
+            // The centre tab's body: at rest around its pill, open as wide as
+            // the panel or as the side tabs allow.
+            readonly property real _cRest: centerPill.width + Theme.bar.tabPadding * 2
+            readonly property real _cFullWidth: Math.max(
+                Math.min(barWindow.modelData.width * Theme.centerDropdown.widthFraction,
+                         Theme.centerDropdown.maxWidth),
+                Theme.centerDropdown.minWidth, barWindow._cRest)
+            readonly property real _cFullHeight: Math.min(
+                Math.round(barWindow.modelData.height / 4), Theme.sizes.centerDropdownMaxHeight)
+            readonly property real _cRoom: 2 * (Math.min(
+                    barWindow._cx - (leftPill.x + leftPill.width),
+                    rightPill.x - barWindow._cx)
+                - Theme.bar.tabPadding - Theme.bar.tabFlare * 2 - Theme.centerDropdown.tabGap)
+            readonly property real _cOpen: Math.max(barWindow._cRest,
+                Math.min(barWindow._cFullWidth, barWindow._cRoom))
+            readonly property real _cBody: barWindow._cRest
+                + (barWindow._cOpen - barWindow._cRest) * centerDrawer.widen
+            readonly property real _cDropWidth: barWindow._cBody
+                + (barWindow._cFullWidth - barWindow._cBody) * centerDrawer.drop
+            readonly property real _cDropHeight: barWindow._cFullHeight * centerDrawer.drop
+
+            // ── Right panel, slid in and locked into the right tab ────────────
+            TabDrawer {
+                id: rightDrawer
+                panelId: "side-right"
+                screen:  barWindow.modelData
+                style:   Theme.sidePanel
+                enabled: barWindow._morphTop && Theme.sidePanel.morph
+            }
+            readonly property real _rGrow:    rightDrawer.stage(Theme.sidePanel.growStage)
+            readonly property real _rGrowW:   rightDrawer.stage(Theme.sidePanel.widthStage)
+            readonly property real _rCorners: rightDrawer.stage(Theme.sidePanel.cornersStage)
+            readonly property real _rContent: rightDrawer.stage(Theme.sidePanel.contentStage)
+
+            // The right tab at rest, in the strip's coordinates.
+            readonly property real _rLeft:  rightPill.x - Theme.bar.tabPadding
+            readonly property real _rRight: Theme.bar.tabFlushEdges
+                ? barStrip.width : rightPill.x + rightPill.width + Theme.bar.tabPadding
+            // The panel: flush with the tab's right side, standing off the
+            // screen's side as the tab does and off its bottom by as much, at
+            // least as wide as the tab.
+            readonly property real _rGap: barStrip.width - barWindow._rRight
+            readonly property real _rWidth: Math.max(Theme.sizes.sidebarWidth,
+                barWindow._rRight - barWindow._rLeft)
+            readonly property real _rHeight: Math.min(
+                barWindow.modelData.height - barStrip.y - barStrip.height - barWindow._rGap,
+                Math.round(barWindow.modelData.height * Theme.sidePanel.heightFraction))
+            // Growing out of the tab's outer bottom corner: from the corner's
+            // own size to the panel's.
+            readonly property real _rNowWidth: Theme.bar.tabRadius
+                + (barWindow._rWidth - Theme.bar.tabRadius) * barWindow._rGrowW
+            readonly property real _rNowHeight: barWindow._rHeight * barWindow._rGrow
+
+            Shortcut {
+                sequence:    "Escape"
+                enabled:     centerDrawer.open || rightDrawer.open
+                onActivated: PanelManager.close()
+            }
+
             // ── Input mask ────────────────────────────────────────────────────
             // _maskTarget dynamically covers the visible strip area.
             // When hidden it shrinks to a thin hover zone so cursor events still
-            // reach the window and can trigger the reveal.
+            // reach the window and can trigger the reveal. While a panel grown
+            // from a tab shows, the screen below the bar takes the clicks too,
+            // so one outside the panel closes it.
             mask: Region {
                 item: _maskTarget
-                Region { item: _dropMask }
+                Region { item: _panelMask }
             }
 
-            // While the centre panel is open, the band below the bar takes the
-            // clicks, so one beside the panel closes it.
             Item {
-                id: _dropMask
+                id: _panelMask
                 y:      barStrip.y + barStrip.height
                 width:  parent.width
-                height: barWindow._dropT > 0 ? barWindow._dropFullHeight + Theme.surface.rimWidth * 2 : 0
+                height: centerDrawer.shown || rightDrawer.shown ? parent.height - y : 0
+            }
+
+            // The right panel dims the screen behind it, the bar included.
+            Rectangle {
+                anchors.fill: parent
+                visible: rightDrawer.shown && Theme.sidePanel.dimOpacity > 0
+                color:   Theme.sidePanel.dimColor
+                opacity: barWindow._rGrow * Theme.sidePanel.dimOpacity
             }
 
             MouseArea {
-                anchors.fill: _dropMask
-                enabled:      barWindow._dropT > 0
+                anchors.fill: _panelMask
+                enabled:      centerDrawer.shown || rightDrawer.shown
                 onClicked: mouse => {
-                    const p = mapToItem(dropArea, mouse.x, mouse.y)
-                    if (!dropArea.contains(Qt.point(p.x, p.y)))
-                        PanelManager.close()
+                    for (const area of [centerArea, rightArea]) {
+                        const p = mapToItem(area, mouse.x, mouse.y)
+                        if (area.visible && area.contains(Qt.point(p.x, p.y)))
+                            return
+                    }
+                    PanelManager.close()
                 }
             }
 
@@ -377,15 +368,15 @@ Scope {
                     mirrored:   root.position === "bottom"
                 }
                 BarTab {
-                    visible:   root._tabs
-                    x:         barWindow._cx - barWindow._bodyWidth / 2 - flare
-                    width:     barWindow._bodyWidth + flare * 2
+                    visible:    root._tabs
+                    x:          barWindow._cx - barWindow._cBody / 2 - flare
+                    width:      barWindow._cBody + flare * 2
                     bodyHeight: parent.height
-                    height:    parent.height + dropHeight
+                    height:     parent.height + dropHeight
 
-                    dropHeight:    barWindow._dropHeight
-                    dropWidth:     barWindow._dropWidth
-                    dropRadius:    radius + (Theme.centerDropdown.bottomLeftRadius - radius) * barWindow._sDrop
+                    dropHeight:    barWindow._cDropHeight
+                    dropWidth:     barWindow._cDropWidth
+                    dropRadius:    radius + (Theme.centerDropdown.bottomLeftRadius - radius) * centerDrawer.drop
                     dropTopRadius: radius
                     dropFillet:    flare
                     fillColor: Theme.bar.tabBackground
@@ -398,9 +389,9 @@ Scope {
                 }
                 BarTab {
                     readonly property bool _flush: Theme.bar.tabFlushEdges
-                    visible:    root._tabs
-                    x:          rightPill.x - Theme.bar.tabPadding - flare
-                    width:      (_flush ? parent.width : rightPill.x + rightPill.width + Theme.bar.tabPadding + flare) - x
+                    visible:    root._tabs && !rightDrawer.shown
+                    x:          barWindow._rLeft - flare
+                    width:      (_flush ? parent.width : barWindow._rRight + flare) - x
                     height:     parent.height
                     flareRight: !_flush
                     fillColor:  Theme.bar.tabBackground
@@ -412,27 +403,84 @@ Scope {
                     mirrored:   root.position === "bottom"
                 }
 
-                // ── Centre panel's content ────────────────────────────────────
-                // The rectangle the drop covers now; the content keeps the
+                // Open: tab and panel in one outline, the panel growing out
+                // of the tab's outer bottom corner.
+                SideDock {
+                    // The flares give way to convex corners like the panel's:
+                    // flares out over the first half, corners in over the second.
+                    readonly property real _flaresOut: Math.min(1, barWindow._rCorners * 2)
+                    readonly property real _cornersIn: Math.max(0, barWindow._rCorners * 2 - 1)
+
+                    visible: root._tabs && rightDrawer.shown
+                    width:   parent.width
+                    height:  parent.height + barWindow._rNowHeight
+
+                    bodyHeight:  parent.height
+                    bodyLeft:    barWindow._rLeft
+                    bodyRight:   barWindow._rRight
+                    radius:      Theme.bar.tabRadius
+                    leftFlare:   Theme.bar.tabFlare * (1 - _flaresOut)
+                    rightFlare:  (Theme.bar.tabFlushEdges ? 0 : Theme.bar.tabFlare) * (1 - _flaresOut)
+                    topCorner:   Theme.sidePanel.cornerRadius * _cornersIn
+                    panelWidth:  barWindow._rNowWidth
+                    panelHeight: barWindow._rNowHeight
+                    cornerRadius: Theme.bar.tabRadius
+                                  + (Theme.sidePanel.cornerRadius - Theme.bar.tabRadius) * barWindow._rGrow
+                    fillet:      Theme.bar.tabFlare
+
+                    fillColor: Theme.bar.tabBackground
+                    sheen:     Theme.surface.sheen
+                    rimColor:  Theme.surface.rimColor
+                    rimWidth:  Theme.surface.rimWidth
+                }
+
+                // ── Panels' content ───────────────────────────────────────────
+                // The rectangle a drop covers now; the content keeps its
                 // panel's full size, is clipped by it, and fades in last.
                 Item {
-                    id: dropArea
-                    visible: barWindow._dropT > 0
+                    id: centerArea
+                    visible: centerDrawer.shown
                     clip:    true
-                    width:   barWindow._dropWidth
-                    height:  barWindow._dropHeight
+                    width:   barWindow._cDropWidth
+                    height:  barWindow._cDropHeight
                     x:       barWindow._cx - width / 2
                     y:       parent.height
                     z:       1
 
                     Loader {
-                        width:   barWindow._dropFullWidth - 32
-                        height:  barWindow._dropFullHeight - 32
+                        width:   barWindow._cFullWidth - 32
+                        height:  barWindow._cFullHeight - 32
                         x:       (parent.width - width) / 2
-                        y:       16 + (1 - barWindow._sContent) * Theme.centerDropdown.contentRise
-                        opacity: barWindow._sContent
-                        active:  barWindow._dropContent !== null
-                        sourceComponent: barWindow._dropContent
+                        y:       16 + (1 - centerDrawer.content) * Theme.centerDropdown.contentRise
+                        opacity: centerDrawer.content
+                        active:  centerDrawer.panelContent !== null
+                        sourceComponent: centerDrawer.panelContent
+                    }
+                }
+
+                // The right panel's content keeps the panel's full size,
+                // anchored to the corner it grows from, is clipped by what has
+                // grown, and comes in last, drifting out of that corner.
+                Item {
+                    id: rightArea
+                    visible: rightDrawer.shown
+                    clip:    true
+                    x:       barWindow._rRight - width
+                    y:       parent.height
+                    width:   barWindow._rNowWidth
+                    height:  barWindow._rNowHeight
+                    z:       1
+
+                    Loader {
+                        width:   barWindow._rWidth - Theme.sidePanel.padding * 2
+                        height:  barWindow._rHeight - Theme.sidePanel.padding * 2
+                        x:       parent.width - width - Theme.sidePanel.padding
+                                 + (1 - barWindow._rContent) * Theme.sidePanel.contentDrift
+                        y:       Theme.sidePanel.padding
+                                 - (1 - barWindow._rContent) * Theme.sidePanel.contentDrift
+                        opacity: barWindow._rContent
+                        active:  rightDrawer.panelContent !== null
+                        sourceComponent: rightDrawer.panelContent
                     }
                 }
 
@@ -459,98 +507,21 @@ Scope {
                     content:   root.centerContent
                     // Gives way to the page tabs while the centre panel is open:
                     // rises towards the screen's edge as it fades.
-                    opacity:   1 - barWindow._sChips
-                    enabled:   barWindow._sChips < 0.5
+                    opacity:   1 - centerDrawer.chips
+                    enabled:   centerDrawer.chips < 0.5
                     visible:   opacity > 0
-                    transform: Translate { y: -barWindow._sChips * Theme.centerDropdown.swapRise }
+                    transform: Translate { y: -centerDrawer.chips * Theme.centerDropdown.swapRise }
                 }
 
-                // ── Page tabs (centre panel open) ─────────────────────────────
-                // Where the chips were: the active page with its icon and
-                // label, the others by their icon; a click turns the page, and
-                // the active one closes the panel.
-                // Clipped to the tab's body, so each tab rises in from its
-                // bottom edge — the panel's side.
-                Item {
-                    x:       barWindow._cx - width / 2
-                    width:   barWindow._bodyWidth
-                    height:  parent.height
-                    z:       2
-                    clip:    true
-                    visible: barWindow._dropT > Theme.centerDropdown.headerStage[0] && root.centerTabs.length > 0
-
-                    Row {
-                        id: pageTabs
-                        anchors.verticalCenter: parent.verticalCenter
-                        x:       Math.round((parent.width - width) / 2)
-                        spacing: 4
-                        enabled: barWindow._dropOpen
-
-                        Repeater {
-                            model: root.centerTabs
-                            delegate: Rectangle {
-                                id: pageTab
-                                required property var modelData
-                                required property int index
-                                readonly property bool _active: PanelManager.activeContentId === modelData.id
-                                    || (!barWindow._dropOpen && barWindow._lastPage === modelData.id)
-
-                                // 0 for the page the panel opened on, then by distance.
-                                readonly property int _rank: {
-                                    const a = root.centerTabs.findIndex(t => t.id === barWindow._lastPage)
-                                    return a < 0 ? pageTab.index : Math.abs(pageTab.index - a)
-                                }
-                                readonly property real _shown: barWindow._stage([
-                                    Theme.centerDropdown.headerStage[0] + pageTab._rank * Theme.centerDropdown.tabStagger,
-                                    Theme.centerDropdown.headerStage[1] + pageTab._rank * Theme.centerDropdown.tabStagger])
-
-                                opacity:   pageTab._shown
-                                transform: Translate { y: (1 - pageTab._shown) * Theme.centerDropdown.swapRise }
-
-                                height: Theme.sizes.barHeight - Theme.bar.pill.verticalMargin * 2
-                                width:  tabRow.implicitWidth + 20
-                                radius: height / 2
-                                color:  pageTab._active ? Theme.widget.activeBackground
-                                      : tabMouse.containsMouse ? Theme.widget.hoverBackground : "transparent"
-
-                                Behavior on width { NumberAnimation { duration: Theme.animation.duration; easing.type: Easing.OutCubic } }
-                                Behavior on color { ColorAnimation  { duration: Theme.animation.duration } }
-
-                                Row {
-                                    id: tabRow
-                                    anchors.centerIn: parent
-                                    spacing: 6
-
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text:           pageTab.modelData.icon
-                                        color:          pageTab._active ? Theme.colors.primary : Theme.widget.textColorDim
-                                        font.family:    Theme.widget.fontFamily
-                                        font.pixelSize: Theme.widget.fontSize
-                                    }
-
-                                    Text {
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        visible:        pageTab._active
-                                        text:           Translation.tr(pageTab.modelData.label)
-                                        color:          Theme.widget.textColor
-                                        font.family:    Theme.widget.fontFamily
-                                        font.pixelSize: Theme.widget.fontSize
-                                        font.bold:      true
-                                    }
-                                }
-
-                                MouseArea {
-                                    id: tabMouse
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape:  Qt.PointingHandCursor
-                                    onClicked: PanelManager.toggle("center-dropdown", pageTab.modelData.id,
-                                                                   PanelManager.activeContent, barWindow.modelData)
-                                }
-                            }
-                        }
-                    }
+                // ── Page tabs, where the chips were ───────────────────────────
+                PageTabs {
+                    x:      barWindow._cx - width / 2
+                    width:  barWindow._cBody
+                    height: parent.height
+                    z:      2
+                    drawer: centerDrawer
+                    pages:  root.centerTabs
+                    rise:   Theme.centerDropdown.swapRise
                 }
 
                 // ── Right pill ────────────────────────────────────────────────

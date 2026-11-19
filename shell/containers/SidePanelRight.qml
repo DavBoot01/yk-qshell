@@ -17,6 +17,10 @@ OverlayPanel {
     panelId: "side-right"
     edge:    "right"
 
+    // With the bar drawn as tabs, the right tab grows this panel out of itself
+    // (BarContainer); this window serves the strip shape alone.
+    active: !(Theme.bar.shape === "tabs" && Theme.sidePanel.morph)
+
     panelWidth:    Theme.sizes.sidebarWidth
     panelColor:    Theme.sidePanel.background
     topLeftRadius:    Theme.sidePanel.radius

@@ -23,10 +23,12 @@ import QtQuick.Shapes
 //
 // ── Drop ──────────────────────────────────────────────────────────────────────
 // A tab can grow a panel out of itself: `dropWidth × dropHeight` below the
-// body, centred on it, in the same outline — so the panel is the tab, with no
-// seam, and the rim runs round both. Where the drop is wider than the body it
-// meets the body with concave corners (`dropFillet`) and turns down with
-// convex ones (`dropTopRadius`); its free corners are `dropRadius`.
+// body — centred on it, or flush with its right or left side (`dropAlign`) —
+// in the same outline, so the panel is the tab, with no seam, and the rim runs
+// round both. On each side where the drop is wider than the body it meets the
+// body with a concave corner (`dropFillet`) and turns down with a convex one
+// (`dropTopRadius`); on a flush side the body's side runs straight down. Its
+// free corners are `dropRadius`.
 //
 //   ‾‾‾╲            ╱‾‾‾
 //       │  content  │
@@ -61,6 +63,8 @@ Shape {
     property real  dropRadius:    radius
     property real  dropTopRadius: radius
     property real  dropFillet:    flare
+    // "center" | "right" | "left"
+    property string dropAlign:    "center"
 
     readonly property real _fl: root.flareLeft  ? root.flare : 0
     readonly property real _fr: root.flareRight ? root.flare : 0
@@ -74,23 +78,33 @@ Shape {
     readonly property real _br: root.width - root._fr
     readonly property real _dh: Math.max(0, root.dropHeight)
     readonly property real _dw: Math.max(root.dropWidth, root._br - root._bl)
-    // How far the drop reaches past the body on each side.
-    readonly property real _ext: (root._dw - (root._br - root._bl)) / 2
-    readonly property bool _wide: root._ext > 0.01 && root._dh > 0
-    readonly property real _dl: (root._bl + root._br - root._dw) / 2
-    readonly property real _dr: (root._bl + root._br + root._dw) / 2
-    readonly property real _f: root._wide
-        ? Math.max(0, Math.min(root.dropFillet, root._ext / 2, root._h - Math.max(root._fl, root._fr))) : 0
-    readonly property real _rt: root._wide
-        ? Math.max(0, Math.min(root.dropTopRadius, root._ext - root._f, root._dh / 2)) : 0
+    readonly property real _dl: root.dropAlign === "right" ? root._br - root._dw
+                              : root.dropAlign === "left"  ? root._bl
+                              : (root._bl + root._br - root._dw) / 2
+    readonly property real _dr: root._dl + root._dw
+    // Whether the drop reaches past the body, on each side.
+    readonly property bool _wideL: root._bl - root._dl > 0.01 && root._dh > 0
+    readonly property bool _wideR: root._dr - root._br > 0.01 && root._dh > 0
+    readonly property real _fL: root._wideL
+        ? Math.max(0, Math.min(root.dropFillet, (root._bl - root._dl) / 2, root._h - root._fl)) : 0
+    readonly property real _fR: root._wideR
+        ? Math.max(0, Math.min(root.dropFillet, (root._dr - root._br) / 2, root._h - root._fr)) : 0
+    readonly property real _rtL: root._wideL
+        ? Math.max(0, Math.min(root.dropTopRadius, root._bl - root._dl - root._fL, root._dh / 2)) : 0
+    readonly property real _rtR: root._wideR
+        ? Math.max(0, Math.min(root.dropTopRadius, root._dr - root._br - root._fR, root._dh / 2)) : 0
+    // A side's room for the bottom corner: the drop's side alone where it is
+    // wider, the body's side and the drop's where it runs straight down.
     readonly property real _rb: root._dh <= 0 ? root._r
         : Math.max(0, Math.min(root.dropRadius, root._dw / 2,
-                               root._wide ? root._dh - root._rt : root._h + root._dh - root.flare))
-    // Where the drop meets the body: the body's bottom when the drop is wider;
-    // otherwise the sides run straight down and every junction point is the
-    // start of the bottom corner.
-    readonly property real _yJ: root._wide ? root._h : root._h + root._dh - root._rb
+                               root._wideL ? root._dh - root._rtL : root._h + root._dh - root._fl,
+                               root._wideR ? root._dh - root._rtR : root._h + root._dh - root._fr))
     readonly property real _yB: root._h + root._dh
+    // Where the drop meets the body on each side: the body's bottom when the
+    // drop is wider there; otherwise the side runs straight down and every
+    // junction point is the start of the bottom corner.
+    readonly property real _yJL: root._wideL ? root._h : root._yB - root._rb
+    readonly property real _yJR: root._wideR ? root._h : root._yB - root._rb
 
     preferredRendererType: Shape.CurveRenderer
 
@@ -129,16 +143,16 @@ Shape {
         }
         // Down the body to the drop, a concave fillet out to its top, and its
         // convex top corner; all of it collapses to one point with no drop.
-        PathLine { x: root._br; y: root._yJ - root._f }
+        PathLine { x: root._br; y: root._yJR - root._fR }
         PathArc {
-            x: root._br + root._f; y: root._yJ
-            radiusX: root._f; radiusY: root._f
+            x: root._br + root._fR; y: root._yJR
+            radiusX: root._fR; radiusY: root._fR
             direction: PathArc.Counterclockwise
         }
-        PathLine { x: root._dr - root._rt; y: root._yJ }
+        PathLine { x: root._dr - root._rtR; y: root._yJR }
         PathArc {
-            x: root._dr; y: root._yJ + root._rt
-            radiusX: root._rt; radiusY: root._rt
+            x: root._dr; y: root._yJR + root._rtR
+            radiusX: root._rtR; radiusY: root._rtR
             direction: PathArc.Clockwise
         }
         PathLine { x: root._dr; y: root._yB - root._rb }
@@ -157,16 +171,16 @@ Shape {
         }
 
         // Up the drop's side, its top corner, the fillet back into the body.
-        PathLine { x: root._dl; y: root._yJ + root._rt }
+        PathLine { x: root._dl; y: root._yJL + root._rtL }
         PathArc {
-            x: root._dl + root._rt; y: root._yJ
-            radiusX: root._rt; radiusY: root._rt
+            x: root._dl + root._rtL; y: root._yJL
+            radiusX: root._rtL; radiusY: root._rtL
             direction: PathArc.Clockwise
         }
-        PathLine { x: root._bl - root._f; y: root._yJ }
+        PathLine { x: root._bl - root._fL; y: root._yJL }
         PathArc {
-            x: root._bl; y: root._yJ - root._f
-            radiusX: root._f; radiusY: root._f
+            x: root._bl; y: root._yJL - root._fL
+            radiusX: root._fL; radiusY: root._fL
             direction: PathArc.Counterclockwise
         }
 

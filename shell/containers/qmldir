@@ -7,3 +7,6 @@ OverlayPanel       1.0 OverlayPanel.qml
 CenterDropdown     1.0 CenterDropdown.qml
 SidePanelLeft      1.0 SidePanelLeft.qml
 SidePanelRight     1.0 SidePanelRight.qml
+TabDrawer          1.0 TabDrawer.qml
+PageTabs           1.0 PageTabs.qml
+SideDock           1.0 SideDock.qml
