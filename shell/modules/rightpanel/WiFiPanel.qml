@@ -16,6 +16,9 @@ Item {
     implicitWidth:  parent ? parent.width  : 0
     implicitHeight: parent ? parent.height : 0
 
+    // The height the page needs, for the panel to fit it: the list whole.
+    readonly property real preferredHeight: networks.y + networkList.implicitHeight
+
     // ── Header row: current connection + scan button ──────────────────────────
     Row {
         id: header
@@ -123,6 +126,7 @@ Item {
 
     // ── Network list ──────────────────────────────────────────────────────────
     QC.ScrollView {
+        id: networks
         anchors {
             top:    errorBanner.bottom
             left:   parent.left
@@ -137,6 +141,7 @@ Item {
         QC.ScrollBar.horizontal.policy: QC.ScrollBar.AlwaysOff
 
         Column {
+            id: networkList
             width: parent.width
             spacing: 2
 

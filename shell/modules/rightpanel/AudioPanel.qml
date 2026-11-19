@@ -17,6 +17,9 @@ Item {
     implicitWidth:  parent ? parent.width  : 0
     implicitHeight: parent ? parent.height : 0
 
+    // The height the page needs, for the panel to fit it.
+    readonly property real preferredHeight: content.y + content.implicitHeight
+
     Text {
         visible: !AudioService.ready
         anchors { top: parent.top; left: parent.left; right: parent.right }
@@ -28,6 +31,7 @@ Item {
     }
 
     Column {
+        id: content
         anchors { top: parent.top; left: parent.left; right: parent.right }
         anchors.topMargin: AudioService.ready ? 0 : 28
         spacing: 18

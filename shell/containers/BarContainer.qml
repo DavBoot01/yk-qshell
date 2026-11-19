@@ -194,9 +194,20 @@ Scope {
             readonly property real _rGap: barStrip.width - barWindow._rRight
             readonly property real _rWidth: Math.max(Theme.sizes.sidebarWidth,
                 barWindow._rRight - barWindow._rLeft)
-            readonly property real _rHeight: Math.min(
+            // Its height fits the page it shows (`preferredHeight`), between
+            // a floor and a ceiling; a change of page animates to the new one.
+            readonly property real _rMaxHeight: Math.min(
                 barWindow.modelData.height - barStrip.y - barStrip.height - barWindow._rGap,
                 Math.round(barWindow.modelData.height * Theme.sidePanel.heightFraction))
+            readonly property real _rFit: rightContent.item && rightContent.item.preferredHeight > 0
+                ? rightContent.item.preferredHeight + Theme.sidePanel.padding * 2 : 0
+            readonly property real _rTargetHeight: Math.min(barWindow._rMaxHeight,
+                Math.max(Theme.sidePanel.minHeight, barWindow._rFit))
+            property real _rHeight: barWindow._rTargetHeight
+            Behavior on _rHeight {
+                enabled: rightDrawer.open && rightDrawer.t >= 1
+                NumberAnimation { duration: Theme.animation.durationLong; easing.type: Easing.OutCubic }
+            }
             // Growing out of the tab's outer bottom corner: from the corner's
             // own size to the panel's.
             readonly property real _rNowWidth: Theme.bar.tabRadius
@@ -472,6 +483,7 @@ Scope {
                     z:       1
 
                     Loader {
+                        id:      rightContent
                         width:   barWindow._rWidth - Theme.sidePanel.padding * 2
                         height:  barWindow._rHeight - Theme.sidePanel.padding * 2
                         x:       parent.width - width - Theme.sidePanel.padding

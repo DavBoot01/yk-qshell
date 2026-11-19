@@ -7,16 +7,24 @@ import qs
 import qs.themes
 import qs.services
 
-// RightPanel — tab host for the right side panel.
+// RightPanel — the right side panel's pages.
 //
-// Three tabs: "audio", "wifi" and "bluetooth".
-// Active tab is PanelManager.activeContentId ("audio" | "wifi" | "bluetooth").
-// Content area swaps between AudioPanel, WiFiPanel and BluetoothPanel via a StackLayout.
+// Three pages: "audio", "wifi" and "bluetooth", each opened by its own chip in
+// the bar, so the panel carries no tabs of its own. The page shown is
+// PanelManager.activeContentId; a StackLayout swaps AudioPanel, WiFiPanel and
+// BluetoothPanel.
+//
+// `preferredHeight` is the shown page's: the panel fits it.
 Item {
     id: root
 
     implicitWidth:  parent ? parent.width  : 0
     implicitHeight: parent ? parent.height : 0
+
+    readonly property real preferredHeight: {
+        const page = pages.children[pages.currentIndex]
+        return page && page.preferredHeight !== undefined ? page.preferredHeight : 0
+    }
 
     // The page shown, kept while the panel closes and the manager has let go.
     property string _page: PanelManager.activeContentId
@@ -28,100 +36,10 @@ Item {
         }
     }
 
-    // ── Tab bar ───────────────────────────────────────────────────────────────
-    Row {
-        id: tabBar
-        anchors { top: parent.top; left: parent.left; right: parent.right }
-        height: 36
-        spacing: 4
-
-        Repeater {
-            model: [
-                { id: "audio", icon: "󰕾", label: "Audio" },
-                { id: "wifi",  icon: "󰖩",  label: "Wi-Fi" },
-                { id: "bluetooth", icon: "󰂯", label: "Bluetooth" }
-            ]
-
-            delegate: Item {
-                id: tabDelegate
-                required property var modelData
-                readonly property bool _active: PanelManager.activeContentId === tabDelegate.modelData.id
-
-                width:  (tabBar.width - 2 * tabBar.spacing) / 3
-                height: tabBar.height
-
-                Rectangle {
-                    anchors.fill: parent
-                    radius: Theme.rounding.button
-                    color: tabDelegate._active
-                        ? Theme.widget.activeBackground
-                        : tabHover.containsMouse
-                            ? Theme.widget.hoverBackground
-                            : "transparent"
-
-                    Behavior on color { ColorAnimation { duration: Theme.animation.duration } }
-
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: 5
-
-                        Text {
-                            text:           tabDelegate.modelData.icon
-                            color:          tabDelegate._active
-                                ? Theme.colors.primary
-                                : Theme.widget.textColorDim
-                            font.family:    Theme.widget.fontFamily
-                            font.pixelSize: Theme.widget.fontSize
-                            anchors.verticalCenter: parent.verticalCenter
-
-                            Behavior on color { ColorAnimation { duration: Theme.animation.duration } }
-                        }
-
-                        Text {
-                            text:           Translation.tr(tabDelegate.modelData.label)
-                            color:          tabDelegate._active
-                                ? Theme.widget.textColor
-                                : Theme.widget.textColorDim
-                            font.family:    Theme.widget.fontFamily
-                            font.pixelSize: Theme.widget.fontSize
-                            anchors.verticalCenter: parent.verticalCenter
-
-                            Behavior on color { ColorAnimation { duration: Theme.animation.duration } }
-                        }
-                    }
-                }
-
-                MouseArea {
-                    id: tabHover
-                    anchors.fill:  parent
-                    hoverEnabled:  true
-                    onClicked:     PanelManager.open("side-right", tabDelegate.modelData.id,
-                                   PanelManager.activeContent, PanelManager.activeScreen)
-                    cursorShape:   Qt.PointingHandCursor
-                }
-            }
-        }
-    }
-
-    // ── Divider ───────────────────────────────────────────────────────────────
-    Rectangle {
-        id: divider
-        anchors { top: tabBar.bottom; left: parent.left; right: parent.right }
-        anchors.topMargin: 6
-        height: 1
-        color: Theme.colors.outline
-        opacity: 0.5
-    }
-
     // ── Content area ──────────────────────────────────────────────────────────
     StackLayout {
-        anchors {
-            top:    divider.bottom
-            left:   parent.left
-            right:  parent.right
-            bottom: parent.bottom
-        }
-        anchors.topMargin: 10
+        id: pages
+        anchors.fill: parent
 
         currentIndex: root._page === "wifi" ? 1
                     : root._page === "bluetooth" ? 2 : 0

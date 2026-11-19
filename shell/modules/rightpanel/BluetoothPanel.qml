@@ -15,6 +15,9 @@ Item {
     implicitWidth:  parent ? parent.width  : 0
     implicitHeight: parent ? parent.height : 0
 
+    // The height the page needs, for the panel to fit it: the list whole.
+    readonly property real preferredHeight: devices.y + deviceList.implicitHeight
+
     // ── Header: the adapter and its power ─────────────────────────────────────
     Row {
         id: header
@@ -161,6 +164,7 @@ Item {
 
     // ── The devices ───────────────────────────────────────────────────────────
     QC.ScrollView {
+        id: devices
         anchors { top: errorBanner.bottom; left: parent.left; right: parent.right; bottom: parent.bottom }
         anchors.topMargin: 6
         clip: true
@@ -168,6 +172,7 @@ Item {
         QC.ScrollBar.horizontal.policy: QC.ScrollBar.AlwaysOff
 
         Column {
+            id: deviceList
             width: parent.width
             spacing: 2
 

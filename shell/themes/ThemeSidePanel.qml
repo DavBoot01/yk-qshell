@@ -26,8 +26,10 @@ QtObject {
     // last, drifting out of the corner by `contentDrift`. Closing runs it
     // backwards.
     property bool morph:          true
-    // Its height, as a share of the screen's.
-    property real heightFraction: 0.60
+    // Its height fits the page it shows, no less than `minHeight` and no more
+    // than `heightFraction` of the screen's; past that the page scrolls.
+    property real minHeight:      220
+    property real heightFraction: 0.70
     // Every corner of the open panel.
     property real cornerRadius:   28
     property int  openDuration:   700
