@@ -50,5 +50,11 @@
   "Clock": "Clock",
   "System": "System",
   "Network": "Network",
-  "Today": "Today"
+  "Today": "Today",
+  "Notifications": "Notifications",
+  "Notification": "Notification",
+  "Clear all": "Clear all",
+  "Do not disturb": "Do not disturb",
+  "No notifications": "No notifications",
+  "now": "now"
 }

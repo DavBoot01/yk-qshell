@@ -11,6 +11,7 @@ ThemeBase {
     colors.background:         "#eff1f5"
     colors.surface:            "#ccd0da"
     colors.primary:            "#8839ef"
+    colors.critical:           "#d20f39"
     colors.textBackground:     "#4c4f69"
     colors.textSurface:        "#4c4f69"
     colors.textSurfaceVariant: "#7c7f93"

@@ -50,5 +50,11 @@
   "Clock": "Orologio",
   "System": "Sistema",
   "Network": "Rete",
-  "Today": "Oggi"
+  "Today": "Oggi",
+  "Notifications": "Notifiche",
+  "Notification": "Notifica",
+  "Clear all": "Cancella tutto",
+  "Do not disturb": "Non disturbare",
+  "No notifications": "Nessuna notifica",
+  "now": "ora"
 }

@@ -20,6 +20,8 @@ Singleton {
     readonly property string time: Qt.formatTime(_now, "HH:mm")
     // ddd d MMM  — e.g. "Mon 13 Apr"
     readonly property string date: Qt.formatDate(_now, "ddd d MMM")
+    // Milliseconds since the epoch, for how long ago something was
+    readonly property real now: _now.getTime()
 
     // ── Internal clock ────────────────────────────────────────────────────────
     property var _now: new Date()

@@ -34,6 +34,11 @@ units:
     plugin: com.yoke.sensors
     exec: components/plugins/sensors
     digest: sha256:1ce77dfc91a1c6a7719040dc2f014f7571e862e228670902134f910df6177efb
+  notifications:
+    kind: plugin
+    plugin: com.yoke.notifications
+    exec: components/plugins/notifications
+    digest: sha256:18e076cd8e6943c7071cb04a6a61b1c802b452661197ab5c6881cd792c6d1035
 channels:
   shell:
     transport: local

@@ -11,6 +11,7 @@ import qs.themes
 import qs.services
 import qs.containers
 import qs.modules.bar
+import qs.modules.notifications
 
 ShellRoot {
     id: root
@@ -24,6 +25,9 @@ ShellRoot {
 
         // Right side panel (audio / wifi) — content comes from PanelManager
         SidePanelRight {}
+
+        // Notifications over the screen as they come, from the Plugin that is the session's server
+        NotificationPopups {}
 
         // ── Bar IPC ───────────────────────────────────────────────────────────
         // Control bar visibility from the compositor or external tools:
@@ -75,6 +79,7 @@ ShellRoot {
         AudioService.initialize()
         WiFiService.initialize()
         BluetoothService.initialize()
+        Notifications.initialize()
     }
 
 }

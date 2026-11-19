@@ -3,6 +3,7 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import qs.themes
 import qs.services
+import qs.modules.notifications
 
 // ClockPage — the time, and a calendar to move through.
 //
@@ -20,7 +21,10 @@ import qs.services
 // Enter zooms in.
 //
 // Every view takes the same height, so the panel does not resize as you move.
-// Opening the page brings it back to today. A page of the right panel, which
+// Opening the page brings it back to today.
+//
+// Below the calendar, the notifications the Plugin holds, newest first: each answered, dismissed, or all
+// cleared; do-not-disturb from the header. Shown here, they are seen. A page of the right panel, which
 // fits `preferredHeight`.
 Item {
     id: root
@@ -145,6 +149,15 @@ Item {
         root.shownMonth = root._tm
         root.selected = new Date(root._ty, root._tm, root._td)
         root.forceActiveFocus()
+        Notifications.markSeen()
+    }
+
+    Connections {
+        target: Notifications
+        function onUnseenChanged(): void {
+            if (root.visible)
+                Notifications.markSeen()
+        }
     }
 
     focus: true
@@ -407,6 +420,95 @@ Item {
                             chosen:  months ? index === root.shownMonth : year === root.shownYear
                             onClicked: months ? root.pickMonth(cell.index) : root.pickYear(cell.year)
                         }
+                    }
+                }
+            }
+        }
+
+        // ── Notifications ────────────────────────────────────────────────────
+        Item {
+            width:  parent.width
+            height: 28
+
+            Row {
+                anchors.left:           parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 8
+                Text {
+                    text: Translation.tr("Notifications")
+                    color: Theme.widget.textColor
+                    font.family: Theme.widget.fontFamily
+                    font.pixelSize: Theme.widget.fontSize
+                    font.bold: true
+                }
+                Text {
+                    visible: Notifications.list.length > 0
+                    text: Notifications.list.length
+                    color: Theme.widget.textColorDim
+                    font.family: Theme.widget.fontFamily
+                    font.pixelSize: Theme.widget.fontSizeSmall
+                }
+            }
+
+            Row {
+                anchors.right:          parent.right
+                anchors.verticalCenter: parent.verticalCenter
+                spacing: 2
+                CalButton {
+                    text: Notifications.dnd ? "󰂛" : "󰂚"
+                    square: true
+                    pixelSize: 14
+                    onClicked: Notifications.setDnd(!Notifications.dnd)
+                }
+                CalButton {
+                    visible: Notifications.list.length > 0
+                    text: Translation.tr("Clear all")
+                    onClicked: Notifications.dismissAll("")
+                }
+            }
+        }
+
+        Text {
+            width: parent.width
+            visible: Notifications.ready && !Notifications.held || Notifications.error !== ""
+            text: Notifications.error !== "" ? Notifications.error : Notifications.serverLine
+            color: Theme.widget.textColorDim
+            wrapMode: Text.Wrap
+            font.family: Theme.widget.fontFamily
+            font.pixelSize: Theme.widget.fontSizeSmall
+        }
+
+        Text {
+            width: parent.width
+            visible: Notifications.list.length === 0
+            text: Notifications.dnd ? Translation.tr("Do not disturb") : Translation.tr("No notifications")
+            color: Theme.widget.textColorDim
+            horizontalAlignment: Text.AlignHCenter
+            topPadding: 6
+            bottomPadding: 6
+            font.family: Theme.widget.fontFamily
+            font.pixelSize: Theme.widget.fontSizeSmall
+        }
+
+        Flickable {
+            id: notes
+            width: parent.width
+            height: Math.min(contentHeight, 380)
+            visible: Notifications.list.length > 0
+            contentHeight: cards.implicitHeight
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+
+            Column {
+                id: cards
+                width: notes.width
+                spacing: 8
+                Repeater {
+                    model: Notifications.list
+                    NotificationCard {
+                        required property var modelData
+                        width: cards.width
+                        notification: modelData
                     }
                 }
             }

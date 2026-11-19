@@ -53,3 +53,12 @@ plugins:
     arch: x86_64
     digest: sha256:1ce77dfc91a1c6a7719040dc2f014f7571e862e228670902134f910df6177efb
     taken: 2026-11-19T15:07:03Z
+  - id: com.yoke.notifications
+    unit: notifications
+    source: https://github.com/yoke-project/yoke-plugin-notifications
+    tag: v0.1.0
+    commit: 76fc8a8ead3f025355b0479d06c1bce0aefb4f88
+    clean: true
+    arch: x86_64
+    digest: sha256:18e076cd8e6943c7071cb04a6a61b1c802b452661197ab5c6881cd792c6d1035
+    taken: 2026-11-19T21:13:03Z

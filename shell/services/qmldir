@@ -7,6 +7,7 @@ singleton Battery      1.0 Battery.qml
 singleton BluetoothService 1.0 BluetoothService.qml
 singleton DateTime     1.0 DateTime.qml
 singleton Network      1.0 Network.qml
+singleton Notifications 1.0 Notifications.qml
 singleton PanelManager 1.0 PanelManager.qml
 singleton Sensors      1.0 Sensors.qml
 singleton SystemInfo   1.0 SystemInfo.qml

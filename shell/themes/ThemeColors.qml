@@ -17,4 +17,6 @@ QtObject {
     property color textSurfaceVariant: "#a6adc8"
     // Borders and dividers
     property color outline: "#45475a"
+    // What asks for attention now: a critical notification
+    property color critical: "#f38ba8"
 }

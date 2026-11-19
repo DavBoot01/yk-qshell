@@ -243,18 +243,32 @@ BarContainer {
                 }
             }
 
-            // Clock — opens the right panel at its calendar
+            // Clock — opens the right panel at its calendar and notifications
             BarChip {
                 anchors.verticalCenter: parent.verticalCenter
                 panelId:        "side-right"
                 panelContentId: "clock"
                 panelContent:   bar._rightPanelContent
                 content: Component {
-                    DateTimeView {
-                        hours:   DateTime.hours
-                        minutes: DateTime.minutes
-                        seconds: DateTime.seconds
-                        date:    DateTime.date
+                    Row {
+                        spacing: 8
+                        DateTimeView {
+                            anchors.verticalCenter: parent.verticalCenter
+                            hours:   DateTime.hours
+                            minutes: DateTime.minutes
+                            seconds: DateTime.seconds
+                            date:    DateTime.date
+                        }
+                        // What came and is not seen yet; a struck bell under do-not-disturb.
+                        Text {
+                            anchors.verticalCenter: parent.verticalCenter
+                            visible: Notifications.unseen > 0 || Notifications.dnd
+                            text: Notifications.dnd ? "󰂛" : "󰂚 " + Notifications.unseen
+                            color: Notifications.dnd ? Theme.widget.textColorDim : Theme.colors.primary
+                            font.family: Theme.widget.fontFamily
+                            font.pixelSize: Theme.widget.fontSizeSmall
+                            font.bold: !Notifications.dnd
+                        }
                     }
                 }
             }
