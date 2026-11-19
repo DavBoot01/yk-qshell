@@ -65,7 +65,7 @@ BarContainer {
         function close(): void { PanelManager.close() }
     }
 
-    // ── Left pill: app launcher + workspaces ──────────────────────────────────
+    // ── Left pill: app launcher + workspaces ─────────────────────────────────────
     leftContent: Component {
         Row {
             spacing: Theme.bar.itemSpacing
@@ -93,7 +93,7 @@ BarContainer {
         }
     }
 
-    // ── Center pill: cpu · ram · clock · network ──────────────────────────────
+    // ── Center pill: cpu · ram · network ─────────────────────────────────────────
     centerContent: Component {
         Row {
             spacing: Theme.bar.itemSpacing
@@ -127,22 +127,6 @@ BarContainer {
                 }
             }
 
-            // Clock — opens carousel at "clock" page
-            BarChip {
-                anchors.verticalCenter: parent.verticalCenter
-                panelId:        "center-dropdown"
-                panelContentId: "clock"
-                panelContent:   bar._carouselContent
-                content: Component {
-                    DateTimeView {
-                        hours:   DateTime.hours
-                        minutes: DateTime.minutes
-                        seconds: DateTime.seconds
-                        date:    DateTime.date
-                    }
-                }
-            }
-
             // Network — opens carousel at "network" page
             BarChip {
                 anchors.verticalCenter: parent.verticalCenter
@@ -163,7 +147,7 @@ BarContainer {
         }
     }
 
-    // ── Right pill: audio · battery · tray ───────────────────────────────────
+    // ── Right pill: audio · wifi · bluetooth · battery · clock · tray ────────────
     rightContent: Component {
         Row {
             id: rightRow
@@ -235,6 +219,23 @@ BarContainer {
                 }
             }
 
+            // Clock — opens the carousel at its "clock" page
+            BarChip {
+                anchors.verticalCenter: parent.verticalCenter
+                panelId:        "center-dropdown"
+                panelContentId: "clock"
+                panelContent:   bar._carouselContent
+                content: Component {
+                    DateTimeView {
+                        hours:   DateTime.hours
+                        minutes: DateTime.minutes
+                        seconds: DateTime.seconds
+                        date:    DateTime.date
+                    }
+                }
+            }
+
+            // Tray — at the right end
             BarChip {
                 anchors.verticalCenter: parent.verticalCenter
                 content: Component {
